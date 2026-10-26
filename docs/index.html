@@ -1,0 +1,430 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="google" content="notranslate">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>TrixFTP â€” Fast, modern FTP / FTPS / SFTP client for Windows, Linux & macOS</title>
+<meta name="description" content="TrixFTP is a modern dual-pane FTP client with a transfer queue, site manager, drag & drop, resume, speed limits and auto-reconnect. Free and open source.">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 28 28'%3E%3Cdefs%3E%3ClinearGradient id='g' x1='0' y1='0' x2='1' y2='1'%3E%3Cstop offset='0' stop-color='%233d8fe0'/%3E%3Cstop offset='1' stop-color='%23174a8f'/%3E%3C/linearGradient%3E%3C/defs%3E%3Crect x='0.5' y='0.5' width='27' height='27' rx='8' fill='url(%23g)'/%3E%3Cg stroke='%23fff' stroke-width='2.4' stroke-linecap='round' stroke-linejoin='round' fill='none'%3E%3Cpath d='M10 19 V 9.5'/%3E%3Cpath d='M6.7 12.4 L10 9 L13.3 12.4'/%3E%3Cpath d='M18 9.5 V 19'/%3E%3Cpath d='M14.7 15.6 L18 19 L21.3 15.6'/%3E%3C/g%3E%3C/svg%3E">
+<style>
+  :root {
+    --bg: #0b1220;
+    --bg2: #0e1728;
+    --panel: #101a2e;
+    --panel2: #142038;
+    --line: #1e2d49;
+    --fg: #e8eef7;
+    --fg2: #a9b8cd;
+    --dim: #71839c;
+    --accent: #2c7be5;
+    --accent2: #55a1ff;
+    --ok: #19c37d;
+    --radius: 14px;
+  }
+  * { box-sizing: border-box; margin: 0; }
+  html { scroll-behavior: smooth; }
+  body {
+    background: var(--bg);
+    color: var(--fg);
+    font: 400 16px/1.6 "Segoe UI Variable Text", "Segoe UI", system-ui, -apple-system, sans-serif;
+    overflow-x: hidden;
+  }
+  a { color: var(--accent2); text-decoration: none; }
+  .wrap { max-width: 1180px; margin: 0 auto; padding: 0 24px; }
+
+  /* ---------- nav ---------- */
+  nav {
+    position: sticky; top: 0; z-index: 50;
+    backdrop-filter: blur(14px);
+    background: #0b1220d9;
+    border-bottom: 1px solid var(--line);
+  }
+  .nav-in { display: flex; align-items: center; gap: 22px; height: 62px; }
+  .brand { display: flex; align-items: center; gap: 10px; font-weight: 800; font-size: 19px; letter-spacing: .2px; }
+  .brand svg { width: 30px; height: 30px; }
+  .brand b { color: var(--accent2); font-weight: 800; }
+  .nav-in .links { margin-left: auto; display: flex; gap: 20px; align-items: center; }
+  .nav-in .links a { color: var(--fg2); font-size: 14px; font-weight: 600; }
+  .nav-in .links a:hover { color: #fff; }
+  .btn {
+    display: inline-flex; align-items: center; gap: 8px;
+    background: linear-gradient(180deg, #3d84dc, #1667c7);
+    color: #fff; border: 0; border-radius: 10px;
+    padding: 10px 18px; font-weight: 700; font-size: 14.5px; cursor: pointer;
+    box-shadow: 0 8px 26px #2c7be54d;
+    transition: transform .16s, box-shadow .16s;
+  }
+  .btn:hover { transform: translateY(-2px); box-shadow: 0 12px 30px #2c7be566; }
+  .btn.ghost { background: #ffffff10; color: var(--fg); box-shadow: none; border: 1px solid var(--line); }
+  .btn.ghost:hover { background: #ffffff1c; }
+
+  /* ---------- hero ---------- */
+  #scene3d { position: fixed; inset: 0; z-index: -1; }
+  .hero { padding: 84px 0 30px; text-align: center; position: relative; }
+  .hero .pill {
+    display: inline-flex; gap: 10px; align-items: center;
+    background: #143150a8;
+    border: 1px solid #274b6b;
+    color: #9fc6f5; font-size: 13px; font-weight: 600; letter-spacing: .6px;
+    padding: 6px 14px; border-radius: 999px; margin-bottom: 22px;
+  }
+  .hero h1 {
+    font-size: clamp(34px, 6vw, 62px); line-height: 1.08; letter-spacing: -1px;
+    font-weight: 800;
+    background: linear-gradient(180deg, #ffffff, #9cc3f2);
+    -webkit-background-clip: text; background-clip: text; color: transparent;
+  }
+  .hero h1 em { font-style: normal; color: var(--accent2); }
+  .hero p.sub { color: var(--fg2); font-size: 18px; max-width: 760px; margin: 18px auto 28px; }
+  .hero .cta { display: flex; gap: 14px; justify-content: center; flex-wrap: wrap; }
+  .proto-badges { display: flex; gap: 10px; justify-content: center; margin-top: 26px; flex-wrap: wrap; }
+  .proto-badges span {
+    font-size: 12.5px; font-weight: 700; letter-spacing: 1.4px; color: #8fc0f7;
+    background: #14315099; border: 1px solid #274b6b; padding: 6px 14px; border-radius: 8px;
+  }
+
+  /* ---------- 3D showcase ---------- */
+  .stage { perspective: 1400px; margin: 54px auto 0; max-width: 1060px; }
+  .shot3d {
+    position: relative; border-radius: 14px; transform-style: preserve-3d;
+    transition: transform .12s ease-out, box-shadow .2s;
+    box-shadow: 0 40px 90px #000000aa, 0 0 0 1px #2c7be52e, 0 0 100px #2c7be530;
+    will-change: transform;
+  }
+  .shot3d img { display: block; width: 100%; border-radius: 14px; }
+  .shot3d .glare {
+    position: absolute; inset: 0; border-radius: 14px; pointer-events: none;
+    background: linear-gradient(115deg, #ffffff26 0%, #ffffff00 38%);
+    transform: translateZ(2px);
+  }
+  .floaty { animation: floaty 7s ease-in-out infinite; }
+  @keyframes floaty { 0%,100% { translate: 0 0; } 50% { translate: 0 -14px; } }
+
+  /* ---------- sections ---------- */
+  section.block { padding: 90px 0; }
+  .kicker { color: var(--accent2); font-weight: 800; letter-spacing: 3px; font-size: 12.5px; text-transform: uppercase; }
+  h2.title { font-size: clamp(26px, 4vw, 40px); font-weight: 800; letter-spacing: -.5px; margin: 8px 0 10px; }
+  .lede { color: var(--fg2); max-width: 720px; margin: 0 auto; text-align: center; }
+
+  .cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 16px; margin-top: 44px; }
+  .card {
+    background: linear-gradient(180deg, var(--panel2), var(--panel));
+    border: 1px solid var(--line); border-radius: var(--radius); padding: 22px;
+    transition: transform .22s, border-color .22s, box-shadow .22s;
+    transform-style: preserve-3d;
+  }
+  .card:hover {
+    transform: translateY(-6px) rotateX(4deg) rotateY(-3deg);
+    border-color: #2c7be588; box-shadow: 0 24px 50px #00000066;
+  }
+  .card .ico {
+    width: 42px; height: 42px; border-radius: 10px; display: grid; place-items: center;
+    background: #165dab33; border: 1px solid #2c7be566; font-size: 20px; margin-bottom: 14px;
+  }
+  .card h3 { font-size: 16.5px; margin-bottom: 6px; }
+  .card p { color: var(--fg2); font-size: 14px; }
+
+  /* tour rows */
+  .tour { display: flex; gap: 44px; align-items: center; margin-top: 70px; }
+  .tour:nth-child(odd) { flex-direction: row-reverse; }
+  .tour .txt { flex: 1; min-width: 260px; }
+  .tour .img { flex: 1.6; min-width: 300px; }
+  .tour .img img {
+    width: 100%; border-radius: 12px; border: 1px solid #2c7be544;
+    box-shadow: 0 22px 60px #00000099;
+    transition: transform .25s, box-shadow .25s;
+    transform: perspective(1100px) rotateY(6deg) rotateX(2deg);
+  }
+  .tour:nth-child(odd) .img img { transform: perspective(1100px) rotateY(-6deg) rotateX(2deg); }
+  .tour .img img:hover { transform: perspective(1100px) rotateY(0) rotateX(0) translateY(-6px); box-shadow: 0 34px 80px #000000bb, 0 0 60px #2c7be534; }
+  .tour .txt h3 { font-size: 21px; margin: 10px 0 8px; }
+  .tour .txt p { color: var(--fg2); font-size: 15px; }
+  .tour .txt ul { margin-top: 12px; padding-left: 18px; color: var(--fg2); font-size: 14.5px; }
+  .tour .txt li { margin: 5px 0; }
+  .tour .txt li::marker { color: var(--accent2); }
+
+  /* download */
+  .dl-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 16px; margin-top: 40px; }
+  .dl {
+    background: var(--panel); border: 1px solid var(--line); border-radius: var(--radius);
+    padding: 24px; text-align: center; transition: transform .2s, border-color .2s;
+  }
+  .dl:hover { transform: translateY(-5px); border-color: #2c7be588; }
+  .dl .os { font-size: 34px; }
+  .dl h3 { margin: 10px 0 4px; font-size: 17px; }
+  .dl p { color: var(--dim); font-size: 13px; margin-bottom: 16px; min-height: 38px; }
+  .dl code { display: block; background: #0a0f1a; border: 1px solid var(--line); border-radius: 8px; padding: 8px 10px; font-size: 12.5px; color: #9fc6f5; margin-top: 10px; overflow-x: auto; }
+
+  footer {
+    border-top: 1px solid var(--line); padding: 34px 0 44px; text-align: center;
+    color: var(--dim); font-size: 14px;
+  }
+  footer a { color: var(--fg2); font-weight: 600; }
+  .dim-row { color: var(--dim); margin-top: 10px; font-size: 13px; }
+
+  @media (max-width: 860px) {
+    .tour { flex-direction: column !important; }
+    .nav-in .links a:not(.btn) { display: none; }
+  }
+</style>
+</head>
+<body>
+
+<canvas id="scene3d"></canvas>
+
+<nav>
+  <div class="wrap nav-in">
+    <div class="brand">
+      <svg viewBox="0 0 28 28" aria-label="TrixFTP">
+        <defs><linearGradient id="lg" x1="0" y1="0" x2="1" y2="1">
+          <stop offset="0" stop-color="#3d8fe0"/><stop offset="1" stop-color="#174a8f"/>
+        </linearGradient></defs>
+        <rect x="0.5" y="0.5" width="27" height="27" rx="8" fill="url(#lg)"/>
+        <rect x="0.5" y="0.5" width="27" height="10" rx="8" fill="#fff" opacity="0.10"/>
+        <g stroke="#fff" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" fill="none">
+          <path d="M10 19 V 9.5"/><path d="M6.7 12.4 L10 9 L13.3 12.4"/>
+          <path d="M18 9.5 V 19"/><path d="M14.7 15.6 L18 19 L21.3 15.6"/>
+        </g>
+      </svg>
+      Trix<b>FTP</b>
+    </div>
+    <div class="links">
+      <a href="#features">Features</a>
+      <a href="#tour">Tour</a>
+      <a href="#download">Download</a>
+      <a class="btn ghost" href="https://github.com/Hatrix-Digital/TrixFTP" target="_blank" rel="noopener">â˜… GitHub</a>
+    </div>
+  </div>
+</nav>
+
+<header class="hero wrap" id="top">
+  <div class="pill">v1.0 Â· Free &amp; open source Â· MIT</div>
+  <h1>Transfer like itâ€™s <em>3D touch</em>.<br>FTP, FTPS &amp; SFTP client.</h1>
+  <p class="sub">
+    TrixFTP is a modern dual-pane file transfer client with a live queue, site manager,
+    drag &amp; drop, resume, speed limits and automatic reconnection â€” rebuilt from zero
+    to be fast, stable and honest about what it does.
+  </p>
+  <div class="cta">
+    <a class="btn" href="#download">â¬‡ Download TrixFTP</a>
+    <a class="btn ghost" href="https://github.com/Hatrix-Digital/TrixFTP" target="_blank" rel="noopener">View source</a>
+  </div>
+  <div class="proto-badges">
+    <span>FTP</span><span>FTPS Â· EXPLICIT TLS</span><span>SFTP / SSH2</span><span>UTF-8</span><span>MLSD</span><span>RESUME (REST)</span>
+  </div>
+
+  <div class="stage">
+    <div class="shot3d" id="heroShot">
+      <img src="assets/shot-main.png" alt="TrixFTP dual-pane main window with demo data" loading="eager">
+      <div class="glare"></div>
+    </div>
+  </div>
+</header>
+
+<section class="block" id="features">
+  <div class="wrap" style="text-align:center">
+    <div class="kicker">Feature grid</div>
+    <h2 class="title">Everything a modern FTP client should do</h2>
+    <p class="lede">Familiar dual-pane workflow, dressed in a clean dashboard UI â€” with the engine bits done right.</p>
+    <div class="cards">
+      <div class="card"><div class="ico">ðŸ—‚ï¸</div><h3>Dual-pane browse</h3><p>Local left, remote right. Sorting, filtering, hidden files, multi-select, directory compare.</p></div>
+      <div class="card"><div class="ico">ðŸš€</div><h3>Transfer queue</h3><p>Up to 6 parallel transfers, pause/resume all, retry failed, live speed &amp; ETA per job.</p></div>
+      <div class="card"><div class="ico">ðŸ”</div><h3>Auto-reconnect</h3><p>If a session drops, queued jobs re-bind to any live session or open a fresh connection with saved credentials.</p></div>
+      <div class="card"><div class="ico">ðŸ§·</div><h3>Site manager</h3><p>Store hosts with encrypted passwords (OS keychain via safeStorage) and jump in with one click.</p></div>
+      <div class="card"><div class="ico">ðŸ–±ï¸</div><h3>Drag &amp; drop</h3><p>Drop files or whole folders from Explorer onto either pane â€” conflicts handled gracefully.</p></div>
+      <div class="card"><div class="ico">ðŸ§­</div><h3>Overwrite policies</h3><p>Ask / overwrite / skip / resume â€” with â€œapply to allâ€, rename suggestions and cancel.</p></div>
+      <div class="card"><div class="ico">ðŸ¢</div><h3>Speed limits</h3><p>Throttle transfers in KB/s per queue so browsing stays snappy.</p></div>
+      <div class="card"><div class="ico">âŒ¨ï¸</div><h3>Keyboard first</h3><p>Type-ahead jump-to-letter, F5 refresh, Ctrl+S sites, F8 everywhere the coder in you expects it.</p></div>
+    </div>
+  </div>
+</section>
+
+<section class="block" id="tour">
+  <div class="wrap">
+    <div style="text-align:center">
+      <div class="kicker">Tour</div>
+      <h2 class="title">See it in action</h2>
+      <p class="lede">All data in these screenshots is demo data â€” no real servers involved.</p>
+    </div>
+
+    <div class="tour">
+      <div class="txt">
+        <div class="kicker">01</div>
+        <h3>Browse two worlds side by side</h3>
+        <p>One window, two panes, full column info (size, mtime, type) and instant filters.</p>
+        <ul>
+          <li>Multi-tab sessions per host</li>
+          <li>Drive quick-picks &amp; home shortcuts</li>
+          <li>Directory compare highlights differences</li>
+        </ul>
+      </div>
+      <div class="img"><img src="assets/shot-main.png" alt="Dual-pane browsing" loading="lazy"></div>
+    </div>
+
+    <div class="tour">
+      <div class="txt">
+        <div class="kicker">02</div>
+        <h3>A queue that never loses its nerve</h3>
+        <p>Progress, speed and ETA for every job. Pause everything, retry failures, clear finished â€” and the queue keeps working across reconnects.</p>
+      </div>
+      <div class="img"><img src="assets/shot-queue.png" alt="Transfer queue" loading="lazy"></div>
+    </div>
+
+    <div class="tour">
+      <div class="txt">
+        <div class="kicker">03</div>
+        <h3>Sites saved &amp; encrypted</h3>
+        <p>Store as many servers as you need. Passwords are protected with your OS storage (DPAPI on Windows, keychain elsewhere).</p>
+      </div>
+      <div class="img"><img src="assets/shot-sites.png" alt="Site manager" loading="lazy"></div>
+    </div>
+  </div>
+</section>
+
+<section class="block" id="download">
+  <div class="wrap" style="text-align:center">
+    <div class="kicker">Download</div>
+    <h2 class="title">Install TrixFTP</h2>
+    <p class="lede">Real native installers built with electron-builder. Unsigned builds â€” SmartScreen may ask, choose â€œRun anywayâ€.</p>
+    <div class="dl-grid">
+      <div class="dl">
+        <div class="os">ðŸªŸ</div>
+        <h3>Windows</h3>
+        <p>NSIS setup, x64 Â· ~96 MB</p>
+        <a class="btn" href="https://github.com/Hatrix-Digital/TrixFTP/releases/latest" target="_blank" rel="noopener">Download .exe</a>
+        <code>TrixFTP Setup 1.0.0.exe</code>
+      </div>
+      <div class="dl">
+        <div class="os">ðŸ§</div>
+        <h3>Linux</h3>
+        <p>Build from source (AppImage planned)</p>
+        <a class="btn ghost" href="https://github.com/Hatrix-Digital/TrixFTP" target="_blank" rel="noopener">Build guide</a>
+        <code>npm install && npm run dist -- --linux</code>
+      </div>
+      <div class="dl">
+        <div class="os">ðŸŽ</div>
+        <h3>macOS</h3>
+        <p>Build on a Mac host (dmg planned)</p>
+        <a class="btn ghost" href="https://github.com/Hatrix-Digital/TrixFTP" target="_blank" rel="noopener">Build guide</a>
+        <code>npm install && npm run dist -- --mac</code>
+      </div>
+    </div>
+    <p class="dim-row">Runs on Electron 37 Â· engines: <b>basic-ftp</b> for FTP/FTPS Â· <b>ssh2</b> for SFTP Â· original UI code Â· MIT licensed.</p>
+  </div>
+</section>
+
+<footer>
+  <div class="wrap">
+    <div>Made for people who move files for a living. âœˆï¸</div>
+    <div class="dim-row">
+      TrixFTP â€” Â© 2026 Â· <a href="https://github.com/Hatrix-Digital/TrixFTP" target="_blank" rel="noopener">GitHub</a> Â·
+      MIT License Â· All screenshots use demo data.
+    </div>
+  </div>
+</footer>
+
+<script src="https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.min.js"></script>
+<script>
+  // ------------- 3D background: particle data-stream + wireframe tunnel -------------
+  (function () {
+    const canvas = document.getElementById('scene3d');
+    const renderer = new THREE.WebGLRenderer({ canvas, antialias: true, alpha: true });
+    renderer.setPixelRatio(Math.min(devicePixelRatio, 2));
+    const scene = new THREE.Scene();
+    scene.fog = new THREE.Fog(0x0b1220, 14, 42);
+    const camera = new THREE.PerspectiveCamera(62, innerWidth / innerHeight, .1, 100);
+    camera.position.set(0, 0, 16);
+
+    // particle streams (packets moving along the pipeline)
+    const N = 900;
+    const pos = new Float32Array(N * 3);
+    const speed = new Float32Array(N);
+    for (let i = 0; i < N; i++) {
+      const arm = Math.floor(i / 150); // 6 arms
+      pos[i * 3] = (Math.random() - .5) * 46;
+      pos[i * 3 + 1] = (Math.random() - .5) * 26;
+      pos[i * 3 + 2] = -Math.random() * 44;
+      speed[i] = .01 + Math.random() * .035;
+    }
+    const dot = document.createElement('canvas');
+    dot.width = dot.height = 64;
+    const ctx = dot.getContext('2d');
+    const g = ctx.createRadialGradient(32, 32, 0, 32, 32, 32);
+    g.addColorStop(0, '#ffffff');
+    g.addColorStop(.25, '#7db6ff');
+    g.addColorStop(1, '#2c7be500');
+    ctx.fillStyle = g; ctx.fillRect(0, 0, 64, 64);
+    const tex = new THREE.CanvasTexture(dot);
+    const geo = new THREE.BufferGeometry();
+    geo.setAttribute('position', new THREE.BufferAttribute(pos, 3));
+    const mat = new THREE.PointsMaterial({ size: .42, map: tex, transparent: true, depthWrite: false, blending: THREE.AdditiveBlending, color: 0x6ea8ff });
+    const points = new THREE.Points(geo, mat);
+    scene.add(points);
+
+    // wireframe torus tunnel accents
+    const rings = [];
+    for (let i = 0; i < 5; i++) {
+      const r = new THREE.Mesh(
+        new THREE.TorusGeometry(6.5 + i * .9, .05, 8, 64),
+        new THREE.MeshBasicMaterial({ color: 0x2c7be5, transparent: true, opacity: .16 })
+      );
+      r.position.z = -6 - i * 7;
+      rings.push(r); scene.add(r);
+    }
+
+    // floating arrow cubes (up/down, like the logo)
+    const cubes = [];
+    for (let i = 0; i < 7; i++) {
+      const c = new THREE.Mesh(
+        new THREE.BoxGeometry(.8, .8, .08),
+        new THREE.MeshBasicMaterial({ color: i % 2 ? 0x55a1ff : 0x19c37d, wireframe: true, transparent: true, opacity: .35 })
+      );
+      c.position.set((Math.random() - .5) * 22, (Math.random() - .5) * 10, -4 - Math.random() * 18);
+      c.rotation.set(Math.random(), Math.random(), Math.random());
+      c.userData.spin = (Math.random() - .5) * .004;
+      cubes.push(c); scene.add(c);
+    }
+
+    let mx = 0, my = 0, t0 = 0;
+    addEventListener('mousemove', e => { mx = (e.clientX / innerWidth - .5); my = (e.clientY / innerHeight - .5); });
+    addEventListener('resize', () => {
+      camera.aspect = innerWidth / innerHeight;
+      camera.updateProjectionMatrix();
+      renderer.setSize(innerWidth, innerHeight);
+    });
+    renderer.setSize(innerWidth, innerHeight);
+
+    function tick(now) {
+      const dt = Math.min(50, (now - t0) || 16); t0 = now;
+      const p = geo.attributes.position.array;
+      for (let i = 0; i < N; i++) {
+        p[i * 3 + 2] += speed[i] * dt * .06;
+        if (p[i * 3 + 2] > 18) p[i * 3 + 2] = -44;
+      }
+      geo.attributes.position.needsUpdate = true;
+      for (const c of cubes) c.rotation.x += c.userData.spin, c.rotation.y += c.userData.spin;
+      camera.position.x += ((mx * 2.2) - camera.position.x) * .04;
+      camera.position.y += ((-my * 1.4) - camera.position.y) * .04;
+      camera.lookAt(0, 0, -6);
+      renderer.render(scene, camera);
+      requestAnimationFrame(tick);
+    }
+    requestAnimationFrame(tick);
+  })();
+
+  // ------------- hero screenshot 3D tilt -------------
+  (function () {
+    const el = document.getElementById('heroShot');
+    const parent = el.parentElement;
+    parent.addEventListener('mousemove', e => {
+      const r = parent.getBoundingClientRect();
+      const nx = (e.clientX - r.left) / r.width - .5;
+      const ny = (e.clientY - r.top) / r.height - .5;
+      el.style.transform = `rotateY(${nx * 9}deg) rotateX(${-ny * 6}deg) translateZ(18px)`;
+    });
+    parent.addEventListener('mouseleave', () => { el.style.transform = 'rotateY(0) rotateX(0)'; });
+  })();
+</script>
+</body>
+</html>

@@ -1,0 +1,103 @@
+name: Build & Release
+
+# Builds native installers for Windows / macOS / Linux.
+# Run automatically when a vX.Y.Z tag is pushed, or manually from the Actions tab.
+# All artifacts are uploaded to the run; tag runs also create a GitHub Release.
+
+on:
+  push:
+    tags: ['v*']
+  workflow_dispatch:
+    inputs:
+      buildTag:
+        description: 'App version to stamp into artifacts (package.json version by default)'
+        required: false
+        default: ''
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    name: ${{ matrix.pretty }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: windows-latest
+            pretty: Windows x64
+          - os: macos-latest
+            pretty: macOS
+          - os: ubuntu-latest
+            pretty: Linux x64
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      # electron-builder needs packager assets for linux helpers
+      - name: Linux build deps
+        if: runner.os == 'Linux'
+        run: sudo apt-get update -y && sudo apt-get install -y --no-install-recommends build-essential
+
+      - name: Build Windows (NSIS + portable)
+        if: runner.os == 'Windows'
+        run: npx electron-builder --win nsis portable -c.publish=null
+
+      - name: Build macOS (dmg + zip)
+        if: runner.os == 'macOS'
+        run: npx electron-builder --mac dmg zip -c.publish=null
+
+      - name: Build Linux (AppImage + deb)
+        if: runner.os == 'Linux'
+        run: npx electron-builder --linux AppImage deb -c.publish=null
+
+      - name: Collect artifacts
+        shell: bash
+        run: |
+          mkdir -p build-out
+          find dist -maxdepth 1 -type f \( -name '*.exe' -o -name '*.dmg' -o -name '*.zip' -o -name '*.AppImage' -o -name '*.deb' \) -print -exec cp {} build-out/ \;
+
+      - name: Upload artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: TrixFTP-${{ runner.os }}
+          path: build-out/*
+          if-no-files-found: error
+          retention-days: 14
+
+  release:
+    name: Create GitHub Release
+    needs: build
+    if: startsWith(github.ref, 'refs/tags/v')
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          path: build-out
+          merge-multiple: true
+
+      - name: Publish release
+        uses: softprops/action-gh-release@v2
+        with:
+          files: build-out/*
+          generate_release_notes: true
+          body: |
+            **TrixFTP installer v${{ github.ref_name }}**
+
+            | Platform | Files |
+            |---|---|
+            | Windows x64 | `TrixFTP Setup *.exe` (installer) + portable |
+            | macOS | `*.dmg` + `*.zip` (unsigned — right-click → Open) |
+            | Linux | `*.AppImage` + `*.deb` |
+
+            Builds are not code-signed.
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

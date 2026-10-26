@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="hr">
+<head>
+  <meta charset="UTF-8">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; style-src 'self' 'unsafe-inline'; script-src 'self'; img-src 'self' data:;">
+  <title>TrixFTP</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+  <!-- top toolbar -->
+  <header id="toolbar">
+    <div class="brand">
+      <svg class="logo" viewBox="0 0 28 28" aria-label="TrixFTP logo">
+        <defs>
+          <linearGradient id="lg" x1="0" y1="0" x2="1" y2="1">
+            <stop offset="0" stop-color="#3d8fe0"/>
+            <stop offset="1" stop-color="#174a8f"/>
+          </linearGradient>
+        </defs>
+        <rect x="0.5" y="0.5" width="27" height="27" rx="8" fill="url(#lg)"/>
+        <rect x="0.5" y="0.5" width="27" height="10" rx="8" fill="#ffffff" opacity="0.10"/>
+        <!-- up arrow (left) -->
+        <g stroke="#ffffff" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" fill="none">
+          <path d="M10 19 V 9.5"/>
+          <path d="M6.7 12.4 L10 9 L13.3 12.4"/>
+          <!-- down arrow (right) -->
+          <path d="M18 9.5 V 19"/>
+          <path d="M14.7 15.6 L18 19 L21.3 15.6"/>
+        </g>
+      </svg>
+      <span class="name">Trix<b>FTP</b></span>
+    </div>
+    <div class="qc">
+      <select id="qcProto" title="Protocol">
+        <option value="ftp">FTP</option>
+        <option value="ftpes">FTPS (explicit TLS)</option>
+        <option value="sftp">SFTP</option>
+      </select>
+      <input id="qcHost" placeholder="host" spellcheck="false" autocomplete="off">
+      <input id="qcUser" placeholder="username" spellcheck="false" autocomplete="off">
+      <input id="qcPass" type="password" placeholder="password">
+      <input id="qcPort" class="port" type="number" min="1" max="65535" placeholder="auto">
+      <button id="btnConnect" class="primary">Connect</button>
+      <button id="btnDisconnect" title="Disconnect active tab">Disconnect</button>
+      <button id="btnSites" title="Site manager (Ctrl+S)">Sites&hellip;</button>
+      <button id="btnSettings" title="Settings">Settings</button>
+    </div>
+    <div class="spacer"></div>
+  </header>
+
+  <!-- session tabs -->
+  <nav id="tabs">
+    <ul id="tabList"><li class="plus" id="tabPlus" title="New tab (Ctrl+T)">+</li></ul>
+  </nav>
+
+  <!-- dual panes -->
+  <main id="panes">
+    <section class="pane" id="paneLocal" data-side="local">
+      <div class="pane-head">
+        <span class="side-title">Local file system</span>
+        <div class="pane-tools">
+          <button data-act="refresh" title="Refresh (F5)">&#8635;</button>
+          <button data-act="mkdir" title="New folder">&#128193;+</button>
+          <button data-act="delete" title="Delete (Del)">&#128465;</button>
+          <button data-act="upload" title="Upload selected (remote &larr; local)">&#8689; Upload</button>
+          <button data-act="filter" title="Filter view (Ctrl+F)">&#128269;</button>
+          <button data-act="hidden" title="Show/hide hidden files">&#128065;</button>
+        </div>
+      </div>
+      <div class="path-row">
+        <select id="localDrives" title="Drive"></select>
+        <button data-pathgo="home" title="Home">&#127968;</button>
+        <button data-pathgo="downloads" title="Downloads">dl</button>
+        <button data-pathgo="desktop" title="Desktop">dk</button>
+        <button data-pathgo="documents" title="Documents">doc</button>
+        <input class="path-input" id="localPath" spellcheck="false">
+        <input class="filter-input" id="localFilter" placeholder="filter&hellip;" spellcheck="false">
+      </div>
+      <div class="cols-head">
+        <div data-col="name">Name</div><div data-col="size">Size</div><div data-col="mtime">Changed</div><div data-col="kind">Type</div>
+      </div>
+      <div class="flist" id="localList" tabindex="0"></div>
+      <div class="pane-foot" id="localInfo">&mdash;</div>
+    </section>
+
+    <div id="divider"></div>
+
+    <section class="pane" id="paneRemote" data-side="remote">
+      <div class="pane-head">
+        <span class="side-title" id="remoteTitle">Remote</span>
+        <div class="pane-tools">
+          <button data-act="refresh" title="Refresh (F5)">&#8635;</button>
+          <button data-act="mkdir" title="New folder">&#128193;+</button>
+          <button data-act="delete" title="Delete (Del)">&#128465;</button>
+          <button data-act="download" title="Download selected (local &larr; remote)">Download &#8681;</button>
+          <button data-act="filter" title="Filter view (Ctrl+F)">&#128269;</button>
+          <button data-act="hidden" title="Show/hide hidden files">&#128065;</button>
+        </div>
+      </div>
+      <div class="path-row">
+        <input class="path-input" id="remotePath" spellcheck="false" placeholder="Not connected">
+        <input class="filter-input" id="remoteFilter" placeholder="filter&hellip;" spellcheck="false">
+      </div>
+      <div class="cols-head">
+        <div data-col="name">Name</div><div data-col="size">Size</div><div data-col="mtime">Changed</div><div data-col="type">Type</div>
+      </div>
+      <div class="flist empty" id="remoteList" tabindex="0">
+        <div class="empty-msg">
+          <div class="empty-title">No connection</div>
+          <div>Use Quick Connect above, press <b>F8</b> for Site Manager<br>or <b>Ctrl+S</b>. Then browse, drag & drop files</div>
+        </div>
+      </div>
+      <div class="pane-foot" id="remoteInfo">&mdash;</div>
+    </section>
+  </main>
+
+  <!-- bottom dock: log + queue -->
+  <section id="dock">
+    <div class="dock-tabs">
+      <button id="dockLogTab" class="on">Log</button>
+      <button id="dockQueueTab">Queue <span id="queueBadge"></span></button>
+      <span class="dock-spacer"></span>
+      <input id="cmdInput" placeholder="Server command&hellip; (FTP)" spellcheck="false">
+      <button id="cmdSend">Send</button>
+      <button id="dockToggle" title="Collapse (Ctrl+L)">&#9660;</button>
+    </div>
+    <div class="dock-body" id="dockBody">
+      <pre id="logView" class="dock-pane on" spellcheck="false"></pre>
+      <div id="queueView" class="dock-pane">
+        <div class="queue-tools">
+          <button id="qPauseAll">&#10074;&#10074; Pause all</button>
+          <button id="qResumeAll">&#9654; Resume all</button>
+          <button id="qRetryFailed">&#8635; Retry failed</button>
+          <button id="qClearDone">Clear finished</button>
+          <button id="qClearAll">Clear all</button>
+          <span class="spacer"></span>
+          <label title="Max parallel transfers (1-6)">parallel <select id="setMaxParallel"><option>1</option><option>2</option><option>3</option><option>4</option><option>5</option><option>6</option></select></label>
+          <label title="Speed limit in KB/s (0 = unlimit)">limit KB/s <input id="setSpeedLimit" type="number" min="0" step="50" value="0"></label>
+          <span id="queueSummary"></span>
+        </div>
+        <div class="qcols"><div>File</div><div>Status</div><div>Progress</div><div>Speed</div><div>ETA</div></div>
+        <div id="queueList"></div>
+      </div>
+    </div>
+  </section>
+
+  <footer id="statusBar">
+    <span id="stLeft">Local: ready</span>
+    <span id="stRight">Queue: idle</span>
+  </footer>
+
+  <div id="modalRoot"></div>
+  <div id="ctxMenu"></div>
+  <div id="toasts"></div>
+
+  <script src="ui.js"></script>
+  <script src="pane.js"></script>
+  <script src="app.js"></script>
+
+  <div id="dragHint">Drop here to transfer</div>
+</body>
+</html>
