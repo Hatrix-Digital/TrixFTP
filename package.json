@@ -4,7 +4,7 @@
   "version": "1.0.0",
   "description": "TrixFTP - fast, modern dual-pane FTP/FTPS/SFTP client",
   "main": "main.js",
-  "author": "TrixFTP",
+  "author": "TrixFTP Team <trixftp@users.noreply.github.com>",
   "license": "MIT",
   "scripts": {
     "start": "electron .",
