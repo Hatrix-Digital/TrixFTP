@@ -49,15 +49,15 @@ jobs:
 
       - name: Build Windows (NSIS + portable)
         if: runner.os == 'Windows'
-        run: npx electron-builder --win nsis portable -c.publish=null
+        run: npx electron-builder --win nsis portable --publish never
 
       - name: Build macOS (dmg + zip)
         if: runner.os == 'macOS'
-        run: npx electron-builder --mac dmg zip -c.publish=null
+        run: npx electron-builder --mac dmg zip --publish never
 
       - name: Build Linux (AppImage + deb)
         if: runner.os == 'Linux'
-        run: npx electron-builder --linux AppImage deb -c.publish=null
+        run: npx electron-builder --linux AppImage deb --publish never
 
       - name: Collect artifacts
         shell: bash
