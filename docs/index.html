@@ -4,178 +4,222 @@
 <meta charset="UTF-8">
 <meta name="google" content="notranslate">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>TrixFTP â€” Fast, modern FTP / FTPS / SFTP client for Windows, Linux & macOS</title>
-<meta name="description" content="TrixFTP is a modern dual-pane FTP client with a transfer queue, site manager, drag & drop, resume, speed limits and auto-reconnect. Free and open source.">
+<title>TrixFTP - FTP, FTPS and SFTP client for Windows, macOS and Linux</title>
+<meta name="description" content="TrixFTP is a fast dual-pane FTP / FTPS / SFTP desktop client with a transfer queue, site manager, drag and drop, resume, speed limits and auto-reconnect. Free and open source (MIT).">
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 28 28'%3E%3Cdefs%3E%3ClinearGradient id='g' x1='0' y1='0' x2='1' y2='1'%3E%3Cstop offset='0' stop-color='%233d8fe0'/%3E%3Cstop offset='1' stop-color='%23174a8f'/%3E%3C/linearGradient%3E%3C/defs%3E%3Crect x='0.5' y='0.5' width='27' height='27' rx='8' fill='url(%23g)'/%3E%3Cg stroke='%23fff' stroke-width='2.4' stroke-linecap='round' stroke-linejoin='round' fill='none'%3E%3Cpath d='M10 19 V 9.5'/%3E%3Cpath d='M6.7 12.4 L10 9 L13.3 12.4'/%3E%3Cpath d='M18 9.5 V 19'/%3E%3Cpath d='M14.7 15.6 L18 19 L21.3 15.6'/%3E%3C/g%3E%3C/svg%3E">
 <style>
   :root {
-    --bg: #0b1220;
-    --bg2: #0e1728;
-    --panel: #101a2e;
-    --panel2: #142038;
-    --line: #1e2d49;
-    --fg: #e8eef7;
-    --fg2: #a9b8cd;
-    --dim: #71839c;
-    --accent: #2c7be5;
-    --accent2: #55a1ff;
-    --ok: #19c37d;
-    --radius: 14px;
+    --blue: #1667c7;
+    --blue-2: #3d84dc;
+    --blue-soft: #e8f1fc;
+    --ink: #14202e;
+    --ink-2: #3c4c60;
+    --muted: #64748c;
+    --line: #d6dfeb;
+    --card: #ffffff;
+    --bg: #f5f8fc;
+    --ok: #0e9a4c;
   }
   * { box-sizing: border-box; margin: 0; }
   html { scroll-behavior: smooth; }
   body {
     background: var(--bg);
-    color: var(--fg);
-    font: 400 16px/1.6 "Segoe UI Variable Text", "Segoe UI", system-ui, -apple-system, sans-serif;
-    overflow-x: hidden;
+    color: var(--ink);
+    font: 400 16px/1.6 "Segoe UI Variable Text", "Segoe UI", system-ui, -apple-system, Roboto, sans-serif;
+    -webkit-font-smoothing: antialiased;
   }
-  a { color: var(--accent2); text-decoration: none; }
-  .wrap { max-width: 1180px; margin: 0 auto; padding: 0 24px; }
+  a { color: var(--blue); text-decoration: none; }
+  img { max-width: 100%; }
+  .wrap { max-width: 1150px; margin: 0 auto; padding: 0 24px; }
 
-  /* ---------- nav ---------- */
-  nav {
-    position: sticky; top: 0; z-index: 50;
-    backdrop-filter: blur(14px);
-    background: #0b1220d9;
+  /* ---------- header ---------- */
+  header.top {
+    position: sticky; top: 0; z-index: 40;
+    background: #fffffff2;
     border-bottom: 1px solid var(--line);
+    transition: box-shadow .2s;
   }
-  .nav-in { display: flex; align-items: center; gap: 22px; height: 62px; }
-  .brand { display: flex; align-items: center; gap: 10px; font-weight: 800; font-size: 19px; letter-spacing: .2px; }
+  header.top.scrolled { box-shadow: 0 4px 24px #16283c14; }
+  .top-in { display: flex; align-items: center; gap: 26px; height: 62px; }
+  .brand { display: flex; align-items: center; gap: 10px; font-weight: 800; font-size: 19px; color: var(--ink); letter-spacing: .2px; }
   .brand svg { width: 30px; height: 30px; }
-  .brand b { color: var(--accent2); font-weight: 800; }
-  .nav-in .links { margin-left: auto; display: flex; gap: 20px; align-items: center; }
-  .nav-in .links a { color: var(--fg2); font-size: 14px; font-weight: 600; }
-  .nav-in .links a:hover { color: #fff; }
+  .brand b { color: var(--blue); }
+  .top-links { margin-left: auto; display: flex; gap: 22px; align-items: center; }
+  .top-links a { color: var(--ink-2); font-size: 14px; font-weight: 600; }
+  .top-links a:hover { color: var(--blue); }
   .btn {
-    display: inline-flex; align-items: center; gap: 8px;
-    background: linear-gradient(180deg, #3d84dc, #1667c7);
-    color: #fff; border: 0; border-radius: 10px;
+    display: inline-flex; align-items: center; gap: 9px;
+    background: linear-gradient(180deg, #3d84dc, var(--blue));
+    color: #fff; border: 0; border-radius: 9px;
     padding: 10px 18px; font-weight: 700; font-size: 14.5px; cursor: pointer;
-    box-shadow: 0 8px 26px #2c7be54d;
-    transition: transform .16s, box-shadow .16s;
+    box-shadow: 0 6px 18px #1667c740;
+    transition: transform .15s, box-shadow .15s;
   }
-  .btn:hover { transform: translateY(-2px); box-shadow: 0 12px 30px #2c7be566; }
-  .btn.ghost { background: #ffffff10; color: var(--fg); box-shadow: none; border: 1px solid var(--line); }
-  .btn.ghost:hover { background: #ffffff1c; }
+  .btn:hover { transform: translateY(-1px); box-shadow: 0 10px 24px #1667c752; }
+  .btn.ghost { background: #fff; color: var(--blue); border: 1px solid var(--line); box-shadow: none; }
+  .btn.ghost:hover { border-color: var(--blue-2); }
 
   /* ---------- hero ---------- */
-  #scene3d { position: fixed; inset: 0; z-index: -1; }
-  .hero { padding: 84px 0 30px; text-align: center; position: relative; }
-  .hero .pill {
-    display: inline-flex; gap: 10px; align-items: center;
-    background: #143150a8;
-    border: 1px solid #274b6b;
-    color: #9fc6f5; font-size: 13px; font-weight: 600; letter-spacing: .6px;
-    padding: 6px 14px; border-radius: 999px; margin-bottom: 22px;
+  .hero {
+    position: relative; overflow: hidden;
+    background:
+      radial-gradient(1000px 480px at 82% -10%, #dbe9fb 0%, #f5f8fc00 60%),
+      radial-gradient(700px 380px at 8% 0%, #e8f1fc 0%, #f5f8fc00 55%),
+      var(--bg);
+    padding: 78px 0 0;
   }
-  .hero h1 {
-    font-size: clamp(34px, 6vw, 62px); line-height: 1.08; letter-spacing: -1px;
-    font-weight: 800;
-    background: linear-gradient(180deg, #ffffff, #9cc3f2);
-    -webkit-background-clip: text; background-clip: text; color: transparent;
+  .hero::before {
+    content: ''; position: absolute; inset: 0; pointer-events: none; opacity: .55;
+    background-image:
+      linear-gradient(#d3dfee55 1px, transparent 1px),
+      linear-gradient(90deg, #d3dfee55 1px, transparent 1px);
+    background-size: 44px 44px;
+    mask-image: radial-gradient(900px 420px at 50% 0%, #000 30%, transparent 75%);
   }
-  .hero h1 em { font-style: normal; color: var(--accent2); }
-  .hero p.sub { color: var(--fg2); font-size: 18px; max-width: 760px; margin: 18px auto 28px; }
-  .hero .cta { display: flex; gap: 14px; justify-content: center; flex-wrap: wrap; }
-  .proto-badges { display: flex; gap: 10px; justify-content: center; margin-top: 26px; flex-wrap: wrap; }
-  .proto-badges span {
-    font-size: 12.5px; font-weight: 700; letter-spacing: 1.4px; color: #8fc0f7;
-    background: #14315099; border: 1px solid #274b6b; padding: 6px 14px; border-radius: 8px;
+  .hero-grid { position: relative; display: grid; grid-template-columns: 1.05fr .95fr; gap: 48px; align-items: center; }
+  .hero-copy h1 { font-size: clamp(32px, 4.6vw, 52px); line-height: 1.1; letter-spacing: -.8px; font-weight: 800; }
+  .hero-copy h1 span { color: var(--blue); }
+  .hero-copy p.lead { color: var(--ink-2); font-size: 17.5px; margin: 18px 0 24px; max-width: 560px; }
+  .os-dl { display: flex; gap: 10px; flex-wrap: wrap; }
+  .os-btn {
+    display: inline-flex; align-items: center; gap: 9px;
+    background: #fff; border: 1px solid var(--line); border-radius: 10px;
+    padding: 10px 16px; font-weight: 700; font-size: 13.5px; color: var(--ink);
+    box-shadow: 0 2px 8px #16283c0e;
+    transition: border-color .15s, transform .15s, box-shadow .15s;
+  }
+  .os-btn:hover { border-color: var(--blue-2); transform: translateY(-2px); box-shadow: 0 8px 20px #1667c71f; }
+  .os-btn svg { width: 17px; height: 17px; fill: var(--ink-2); }
+  .chips { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 22px; }
+  .chip {
+    font-size: 12px; font-weight: 700; letter-spacing: .8px; color: var(--blue);
+    background: var(--blue-soft); border: 1px solid #c4dcf6; border-radius: 7px; padding: 5px 11px;
+  }
+  .ver {
+    margin-top: 14px; color: var(--muted); font-size: 13px;
   }
 
-  /* ---------- 3D showcase ---------- */
-  .stage { perspective: 1400px; margin: 54px auto 0; max-width: 1060px; }
+  .hero-shot { perspective: 1500px; }
   .shot3d {
-    position: relative; border-radius: 14px; transform-style: preserve-3d;
-    transition: transform .12s ease-out, box-shadow .2s;
-    box-shadow: 0 40px 90px #000000aa, 0 0 0 1px #2c7be52e, 0 0 100px #2c7be530;
+    transform-style: preserve-3d; transition: transform .12s ease-out, box-shadow .2s;
+    border-radius: 12px; overflow: hidden;
+    box-shadow: 0 30px 70px #16283c26, 0 1px 0 #ffffff inset, 0 0 0 1px #d0dcea;
+    background: #fff;
     will-change: transform;
   }
-  .shot3d img { display: block; width: 100%; border-radius: 14px; }
-  .shot3d .glare {
-    position: absolute; inset: 0; border-radius: 14px; pointer-events: none;
-    background: linear-gradient(115deg, #ffffff26 0%, #ffffff00 38%);
-    transform: translateZ(2px);
+  .shot-frame {
+    background: linear-gradient(180deg, #edf2f9, #f9fbfe);
+    border-bottom: 1px solid var(--line);
+    display: flex; align-items: center; gap: 6px;
+    padding: 9px 12px;
   }
-  .floaty { animation: floaty 7s ease-in-out infinite; }
-  @keyframes floaty { 0%,100% { translate: 0 0; } 50% { translate: 0 -14px; } }
+  .dot { width: 10px; height: 10px; border-radius: 50%; background: #c6d2e2; }
+  .dot.r { background: #f08a8a; } .dot.y { background: #f3c96b; } .dot.g { background: #86d6a2; }
+  .shot-frame .cap { margin-left: 8px; font-size: 11.5px; color: var(--muted); font-weight: 600; }
 
   /* ---------- sections ---------- */
-  section.block { padding: 90px 0; }
-  .kicker { color: var(--accent2); font-weight: 800; letter-spacing: 3px; font-size: 12.5px; text-transform: uppercase; }
-  h2.title { font-size: clamp(26px, 4vw, 40px); font-weight: 800; letter-spacing: -.5px; margin: 8px 0 10px; }
-  .lede { color: var(--fg2); max-width: 720px; margin: 0 auto; text-align: center; }
+  section.block { padding: 88px 0; }
+  .kicker { color: var(--blue); font-weight: 800; letter-spacing: 2.6px; font-size: 12px; text-transform: uppercase; }
+  h2.title { font-size: clamp(26px, 3.4vw, 36px); font-weight: 800; letter-spacing: -.4px; margin: 8px 0 10px; }
+  .lede { color: var(--ink-2); max-width: 700px; }
+  .center { text-align: center; }
+  .center .lede { margin: 0 auto; }
 
-  .cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 16px; margin-top: 44px; }
+  /* steps */
+  .steps { display: grid; grid-template-columns: repeat(3, 1fr); gap: 18px; margin-top: 46px; counter-reset: step; }
+  .step {
+    background: var(--card); border: 1px solid var(--line); border-radius: 12px; padding: 26px 24px;
+    position: relative; box-shadow: 0 1px 2px #16283c0d;
+  }
+  .step .num {
+    font-size: 12px; font-weight: 800; color: #fff; background: var(--blue-2);
+    width: 26px; height: 26px; border-radius: 8px; display: grid; place-items: center; margin-bottom: 14px;
+  }
+  .step h3 { font-size: 17px; margin-bottom: 6px; }
+  .step p { color: var(--ink-2); font-size: 14.5px; }
+
+  /* feature cards */
+  .cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 16px; margin-top: 46px; }
   .card {
-    background: linear-gradient(180deg, var(--panel2), var(--panel));
-    border: 1px solid var(--line); border-radius: var(--radius); padding: 22px;
-    transition: transform .22s, border-color .22s, box-shadow .22s;
-    transform-style: preserve-3d;
+    background: var(--card); border: 1px solid var(--line); border-radius: 12px; padding: 22px;
+    transition: transform .18s, box-shadow .18s, border-color .18s;
   }
-  .card:hover {
-    transform: translateY(-6px) rotateX(4deg) rotateY(-3deg);
-    border-color: #2c7be588; box-shadow: 0 24px 50px #00000066;
-  }
+  .card:hover { transform: translateY(-4px); border-color: #a8c8ec; box-shadow: 0 16px 34px #16283c1c; }
   .card .ico {
-    width: 42px; height: 42px; border-radius: 10px; display: grid; place-items: center;
-    background: #165dab33; border: 1px solid #2c7be566; font-size: 20px; margin-bottom: 14px;
+    width: 40px; height: 40px; border-radius: 9px; display: grid; place-items: center;
+    background: var(--blue-soft); border: 1px solid #c4dcf6; margin-bottom: 14px;
   }
-  .card h3 { font-size: 16.5px; margin-bottom: 6px; }
-  .card p { color: var(--fg2); font-size: 14px; }
+  .card .ico svg { width: 20px; height: 20px; stroke: var(--blue); fill: none; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+  .card h3 { font-size: 16px; margin-bottom: 6px; }
+  .card p { color: var(--ink-2); font-size: 14px; }
 
-  /* tour rows */
-  .tour { display: flex; gap: 44px; align-items: center; margin-top: 70px; }
-  .tour:nth-child(odd) { flex-direction: row-reverse; }
+  /* screenshots tour */
+  .tour { display: flex; gap: 44px; align-items: center; margin-top: 64px; }
+  .tour.rev { flex-direction: row-reverse; }
   .tour .txt { flex: 1; min-width: 260px; }
-  .tour .img { flex: 1.6; min-width: 300px; }
-  .tour .img img {
-    width: 100%; border-radius: 12px; border: 1px solid #2c7be544;
-    box-shadow: 0 22px 60px #00000099;
-    transition: transform .25s, box-shadow .25s;
-    transform: perspective(1100px) rotateY(6deg) rotateX(2deg);
-  }
-  .tour:nth-child(odd) .img img { transform: perspective(1100px) rotateY(-6deg) rotateX(2deg); }
-  .tour .img img:hover { transform: perspective(1100px) rotateY(0) rotateX(0) translateY(-6px); box-shadow: 0 34px 80px #000000bb, 0 0 60px #2c7be534; }
-  .tour .txt h3 { font-size: 21px; margin: 10px 0 8px; }
-  .tour .txt p { color: var(--fg2); font-size: 15px; }
-  .tour .txt ul { margin-top: 12px; padding-left: 18px; color: var(--fg2); font-size: 14.5px; }
-  .tour .txt li { margin: 5px 0; }
-  .tour .txt li::marker { color: var(--accent2); }
+  .tour .img { flex: 1.7; min-width: 300px; }
+  .tour .img .shot3d { transform: perspective(1200px) rotateY(4deg) rotateX(1.5deg); }
+  .tour.rev .img .shot3d { transform: perspective(1200px) rotateY(-4deg) rotateX(1.5deg); }
+  .tour .img .shot3d:hover { transform: none; }
+  .tour .txt h3 { font-size: 20px; margin: 8px 0 8px; }
+  .tour .txt p { color: var(--ink-2); font-size: 15px; }
+  .tour .txt ul { margin-top: 10px; padding-left: 18px; color: var(--ink-2); font-size: 14.5px; }
+  .tour .txt li { margin: 4px 0; }
+  .tour .txt li::marker { color: var(--blue-2); }
+
+  /* tables */
+  .spec { width: 100%; border-collapse: collapse; margin-top: 38px; background: #fff; border: 1px solid var(--line); border-radius: 12px; overflow: hidden; }
+  .spec th { background: #eef4fb; color: var(--blue); font-size: 12.5px; letter-spacing: 1px; text-transform: uppercase; text-align: left; padding: 12px 18px; border-bottom: 1px solid var(--line); }
+  .spec td { padding: 13px 18px; border-bottom: 1px solid #e4ebf4; font-size: 14.5px; vertical-align: top; }
+  .spec tr:last-child td { border-bottom: 0; }
+  .spec td:first-child { font-weight: 700; color: var(--ink); white-space: nowrap; }
+  .spec td { color: var(--ink-2); }
+  .spec code { background: #eef4fb; border: 1px solid #d7e5f5; border-radius: 6px; padding: 2px 7px; font-size: 12.5px; color: var(--blue); font-family: Consolas, monospace; }
+  .two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 22px; margin-top: 38px; align-items: start; }
 
   /* download */
-  .dl-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 16px; margin-top: 40px; }
-  .dl {
-    background: var(--panel); border: 1px solid var(--line); border-radius: var(--radius);
-    padding: 24px; text-align: center; transition: transform .2s, border-color .2s;
+  .dl-band {
+    background: linear-gradient(180deg, #10243f, #0d1b2f); color: #e8eef7;
+    border-radius: 16px; padding: 46px 40px; margin-top: 20px;
+    display: flex; gap: 40px; align-items: center; flex-wrap: wrap;
   }
-  .dl:hover { transform: translateY(-5px); border-color: #2c7be588; }
-  .dl .os { font-size: 34px; }
-  .dl h3 { margin: 10px 0 4px; font-size: 17px; }
-  .dl p { color: var(--dim); font-size: 13px; margin-bottom: 16px; min-height: 38px; }
-  .dl code { display: block; background: #0a0f1a; border: 1px solid var(--line); border-radius: 8px; padding: 8px 10px; font-size: 12.5px; color: #9fc6f5; margin-top: 10px; overflow-x: auto; }
+  .dl-band h2 { font-size: 30px; letter-spacing: -.4px; margin-bottom: 6px; }
+  .dl-band p { color: #a9b8cd; font-size: 15px; max-width: 480px; }
+  .dl-band .r { margin-left: auto; display: flex; gap: 12px; flex-wrap: wrap; }
+  .dl-band .btn { background: #fff; color: #10243f; box-shadow: none; }
+  .dl-band .btn:hover { background: #dbe9fb; }
+  .dl-note { color: #7d90ab; font-size: 12.5px; margin-top: 14px; width: 100%; }
 
-  footer {
-    border-top: 1px solid var(--line); padding: 34px 0 44px; text-align: center;
-    color: var(--dim); font-size: 14px;
+  /* faq */
+  .faq { max-width: 780px; margin: 40px auto 0; }
+  .faq details {
+    background: #fff; border: 1px solid var(--line); border-radius: 10px; padding: 16px 20px; margin-bottom: 10px;
   }
-  footer a { color: var(--fg2); font-weight: 600; }
-  .dim-row { color: var(--dim); margin-top: 10px; font-size: 13px; }
+  .faq summary { font-weight: 700; cursor: pointer; font-size: 15.5px; }
+  .faq p { color: var(--ink-2); margin-top: 8px; font-size: 14.5px; }
 
-  @media (max-width: 860px) {
-    .tour { flex-direction: column !important; }
-    .nav-in .links a:not(.btn) { display: none; }
+  footer { border-top: 1px solid var(--line); background: #fff; padding: 34px 0 44px; margin-top: 40px; }
+  .foot { display: flex; gap: 20px; align-items: center; flex-wrap: wrap; color: var(--muted); font-size: 13.5px; }
+  .foot a { color: var(--ink-2); font-weight: 600; }
+  .foot .brand { font-size: 16px; }
+
+  .reveal { opacity: 0; transform: translateY(18px); transition: opacity .6s ease, transform .6s ease; }
+  .reveal.in { opacity: 1; transform: none; }
+
+  @media (max-width: 940px) {
+    .hero-grid { grid-template-columns: 1fr; }
+    .steps { grid-template-columns: 1fr; }
+    .tour, .tour.rev { flex-direction: column; }
+    .two-col { grid-template-columns: 1fr; }
+    .top-links a:not(.btn) { display: none; }
   }
 </style>
 </head>
 <body>
 
-<canvas id="scene3d"></canvas>
-
-<nav>
-  <div class="wrap nav-in">
-    <div class="brand">
+<header class="top" id="topbar">
+  <div class="wrap top-in">
+    <a class="brand" href="#top">
       <svg viewBox="0 0 28 28" aria-label="TrixFTP">
         <defs><linearGradient id="lg" x1="0" y1="0" x2="1" y2="1">
           <stop offset="0" stop-color="#3d8fe0"/><stop offset="1" stop-color="#174a8f"/>
@@ -188,243 +232,362 @@
         </g>
       </svg>
       Trix<b>FTP</b>
-    </div>
-    <div class="links">
+    </a>
+    <div class="top-links">
+      <a href="#workflows">How it works</a>
       <a href="#features">Features</a>
-      <a href="#tour">Tour</a>
-      <a href="#download">Download</a>
-      <a class="btn ghost" href="https://github.com/Hatrix-Digital/TrixFTP" target="_blank" rel="noopener">â˜… GitHub</a>
-    </div>
-  </div>
-</nav>
-
-<header class="hero wrap" id="top">
-  <div class="pill">v1.0 Â· Free &amp; open source Â· MIT</div>
-  <h1>Transfer like itâ€™s <em>3D touch</em>.<br>FTP, FTPS &amp; SFTP client.</h1>
-  <p class="sub">
-    TrixFTP is a modern dual-pane file transfer client with a live queue, site manager,
-    drag &amp; drop, resume, speed limits and automatic reconnection â€” rebuilt from zero
-    to be fast, stable and honest about what it does.
-  </p>
-  <div class="cta">
-    <a class="btn" href="#download">â¬‡ Download TrixFTP</a>
-    <a class="btn ghost" href="https://github.com/Hatrix-Digital/TrixFTP" target="_blank" rel="noopener">View source</a>
-  </div>
-  <div class="proto-badges">
-    <span>FTP</span><span>FTPS Â· EXPLICIT TLS</span><span>SFTP / SSH2</span><span>UTF-8</span><span>MLSD</span><span>RESUME (REST)</span>
-  </div>
-
-  <div class="stage">
-    <div class="shot3d" id="heroShot">
-      <img src="assets/shot-main.png" alt="TrixFTP dual-pane main window with demo data" loading="eager">
-      <div class="glare"></div>
+      <a href="#screens">Screenshots</a>
+      <a href="#specs">Specs</a>
+      <a class="btn ghost" href="https://github.com/Hatrix-Digital/TrixFTP" target="_blank" rel="noopener">Source</a>
+      <a class="btn" href="#download">Download</a>
     </div>
   </div>
 </header>
 
-<section class="block" id="features">
-  <div class="wrap" style="text-align:center">
-    <div class="kicker">Feature grid</div>
-    <h2 class="title">Everything a modern FTP client should do</h2>
-    <p class="lede">Familiar dual-pane workflow, dressed in a clean dashboard UI â€” with the engine bits done right.</p>
-    <div class="cards">
-      <div class="card"><div class="ico">ðŸ—‚ï¸</div><h3>Dual-pane browse</h3><p>Local left, remote right. Sorting, filtering, hidden files, multi-select, directory compare.</p></div>
-      <div class="card"><div class="ico">ðŸš€</div><h3>Transfer queue</h3><p>Up to 6 parallel transfers, pause/resume all, retry failed, live speed &amp; ETA per job.</p></div>
-      <div class="card"><div class="ico">ðŸ”</div><h3>Auto-reconnect</h3><p>If a session drops, queued jobs re-bind to any live session or open a fresh connection with saved credentials.</p></div>
-      <div class="card"><div class="ico">ðŸ§·</div><h3>Site manager</h3><p>Store hosts with encrypted passwords (OS keychain via safeStorage) and jump in with one click.</p></div>
-      <div class="card"><div class="ico">ðŸ–±ï¸</div><h3>Drag &amp; drop</h3><p>Drop files or whole folders from Explorer onto either pane â€” conflicts handled gracefully.</p></div>
-      <div class="card"><div class="ico">ðŸ§­</div><h3>Overwrite policies</h3><p>Ask / overwrite / skip / resume â€” with â€œapply to allâ€, rename suggestions and cancel.</p></div>
-      <div class="card"><div class="ico">ðŸ¢</div><h3>Speed limits</h3><p>Throttle transfers in KB/s per queue so browsing stays snappy.</p></div>
-      <div class="card"><div class="ico">âŒ¨ï¸</div><h3>Keyboard first</h3><p>Type-ahead jump-to-letter, F5 refresh, Ctrl+S sites, F8 everywhere the coder in you expects it.</p></div>
+<main id="top">
+
+<!-- ================= HERO ================= -->
+<section class="hero">
+  <div class="wrap hero-grid">
+    <div class="hero-copy">
+      <div class="kicker">v1.0.0 &middot; Free &middot; Open source &middot; MIT</div>
+      <h1>The FTP client that <span>keeps the queue moving</span></h1>
+      <p class="lead">
+        TrixFTP is a dual-pane FTP / FTPS / SFTP client for the desktop: drag and drop,
+        resume, speed limits, encrypted site storage and a transfer queue that reconnects
+        by itself when a session drops.
+      </p>
+      <div class="os-dl">
+        <a class="os-btn" href="https://github.com/Hatrix-Digital/TrixFTP/releases/latest" target="_blank" rel="noopener">
+          <svg viewBox="0 0 24 24"><path d="M3 5.5 10.5 4.4v7.1H3V5.5zm0 13 7.5 1.1v-7H3v5.9zM11.5 4.2 21 3v8.5h-9.5V4.2zm0 15.6L21 21v-8.5h-9.5v7.3z"/></svg>
+          Windows
+        </a>
+        <a class="os-btn" href="https://github.com/Hatrix-Digital/TrixFTP/releases/latest" target="_blank" rel="noopener">
+          <svg viewBox="0 0 24 24"><path d="M12 2C6.5 2 2 6.5 2 12s4.5 10 10 10 10-4.5 10-10S17.5 2 12 2zm-5.2 8.3 4.1-2.4c.4-.2.9-.2 1.3.1l3.9 2.3c.5.3.5 1 0 1.3l-3.9 2.3c-.4.3-.9.3-1.3 0l-4.1-2.4c-.5-.3-.5-1 0-1.2zm2 5.6h4.4c.7 0 1.1.8.8 1.4l-2.2 3.8c-.4.6-1.2.6-1.6 0l-2.2-3.8c-.4-.6 0-1.4.8-1.4z"/></svg>
+          Linux
+        </a>
+        <a class="os-btn" href="https://github.com/Hatrix-Digital/TrixFTP/releases/latest" target="_blank" rel="noopener">
+          <svg viewBox="0 0 24 24"><path d="M16.4 12.7c0-2.5 2-3.7 2.1-3.8-1.2-1.7-3-2-3.6-2-1.5-.1-3 .9-3.8.9-.8 0-2-.9-3.3-.9-1.7 0-3.3 1-4.1 2.5-1.8 3.1-.5 7.7 1.3 10.2.9 1.2 1.9 2.6 3.2 2.6 1.3-.1 1.8-.8 3.3-.8s2 .8 3.3.8c1.4 0 2.3-1.3 3.1-2.5 1-1.4 1.4-2.8 1.4-2.9-.1 0-2.9-1.1-2.9-4.1zM13.9 4.9c.7-.9 1.2-2.1 1.1-3.3-1.1 0-2.3.7-3.1 1.6-.7.8-1.3 2-1.1 3.2 1.2.1 2.4-.6 3.1-1.5z"/></svg>
+          macOS
+        </a>
+      </div>
+      <div class="chips">
+        <span class="chip">FTP</span>
+        <span class="chip">FTPS - EXPLICIT TLS</span>
+        <span class="chip">SFTP / SSH2</span>
+        <span class="chip">UTF-8</span>
+        <span class="chip">MLSD / MLST</span>
+        <span class="chip">RESUME - REST</span>
+      </div>
+      <div class="ver">Windows 10 / 11 x64 &middot; macOS (Intel + Apple silicon) &middot; Linux (AppImage, .deb)</div>
+    </div>
+
+    <div class="hero-shot">
+      <div class="shot3d" id="tiltShot">
+        <div class="shot-frame">
+          <span class="dot r"></span><span class="dot y"></span><span class="dot g"></span>
+          <span class="cap">TrixFTP 1.0.0 - dual-pane browse (demo data)</span>
+        </div>
+        <img src="assets/shot-main.png" alt="TrixFTP main window: local folder on the left, remote server on the right" loading="eager">
+      </div>
     </div>
   </div>
 </section>
 
-<section class="block" id="tour">
+<!-- ================= HOW IT WORKS ================= -->
+<section class="block" id="workflows">
+  <div class="wrap center">
+    <div class="kicker reveal">How it works</div>
+    <h2 class="title reveal">Everything you do with a server, in one window</h2>
+    <div class="steps">
+      <div class="step reveal">
+        <div class="num">1</div>
+        <h3>Connect</h3>
+        <p>Quick Connect bar, Site Manager (F8) or stored bookmarks. FTP, FTPS with TLS and
+        SFTP are first-class citizens; passwords are encrypted with the OS credential store.</p>
+      </div>
+      <div class="step reveal">
+        <div class="num">2</div>
+        <h3>Browse and sync</h3>
+        <p>Two panes, tabs per session, full file info and filters. Compare directories,
+        keyboard type-ahead and drag and drop between sides and from the operating system.</p>
+      </div>
+      <div class="step reveal">
+        <div class="num">3</div>
+        <h3>Transfer without babysitting</h3>
+        <p>Queue handles 1-6 parallel jobs with pause, resume, retry and speed limits.
+        If a session dies mid-queue, jobs re-attach or reconnect automatically.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ================= FEATURES ================= -->
+<section class="block" style="background:#fff; border-top:1px solid var(--line); border-bottom:1px solid var(--line);" id="features">
+  <div class="wrap center">
+    <div class="kicker reveal">Features</div>
+    <h2 class="title reveal">Built like a serious FTP tool</h2>
+    <div class="cards">
+      <div class="card reveal">
+        <div class="ico"><svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M3 9h18M9 9v11"/></svg></div>
+        <h3>Dual-pane browser</h3>
+        <p>Local and remote side by side. Sorting, filtering, hidden files, multi-select,
+        directory compare with difference highlighting.</p>
+      </div>
+      <div class="card reveal">
+        <div class="ico"><svg viewBox="0 0 24 24"><path d="M12 3v12M7 10l5 5 5-5M5 21h14"/></svg></div>
+        <h3>Transfer queue</h3>
+        <p>Up to 6 parallel transfers, pause all, resume all, retry failed, live speed
+        and ETA for every job.</p>
+      </div>
+      <div class="card reveal">
+        <div class="ico"><svg viewBox="0 0 24 24"><path d="M4 14a8 8 0 1 1 2.3 5.7M4 14v5h5"/></svg></div>
+        <h3>Auto-reconnect</h3>
+        <p>A dropped session never fails a queued job: the queue re-binds to any live
+        session or opens a fresh one with saved credentials.</p>
+      </div>
+      <div class="card reveal">
+        <div class="ico"><svg viewBox="0 0 24 24"><rect x="4" y="10" width="16" height="10" rx="2"/><path d="M8 10V7a4 4 0 0 1 8 0v3"/></svg></div>
+        <h3>Encrypted site manager</h3>
+        <p>Bookmarks for unlimited hosts. Passwords protected by
+        OS storage (DPAPI on Windows, keychain elsewhere).</p>
+      </div>
+      <div class="card reveal">
+        <div class="ico"><svg viewBox="0 0 24 24"><path d="M12 6v6M8 8a4 4 0 1 0 4 8h4M16 4H8M4 9V8a4 4 0 0 1 4-4"/></svg></div>
+        <h3>Resume and integrity</h3>
+        <p>Interrupted transfers continue through REST/size offset; finished files are
+        verified against the listing size.</p>
+      </div>
+      <div class="card reveal">
+        <div class="ico"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 3"/></svg></div>
+        <h3>Conflict policies</h3>
+        <p>Overwrite, skip, resume or rename - per file or "apply to all", with a clear
+        size and date comparison dialog.</p>
+      </div>
+      <div class="card reveal">
+        <div class="ico"><svg viewBox="0 0 24 24"><path d="M4 20V9M9 20V4M14 20v-8M19 20V7"/></svg></div>
+        <h3>Speed limits</h3>
+        <p>Throttle transfers in KB/s so production servers and public hotspots stay
+        usable during uploads.</p>
+      </div>
+      <div class="card reveal">
+        <div class="ico"><svg viewBox="0 0 24 24"><rect x="2" y="6" width="20" height="13" rx="2"/><path d="M6 10h.01M9 10h.01"/></svg></div>
+        <h3>Keyboard first</h3>
+        <p>Type-ahead jump-to-letter in both panes, F5 refresh, F8 site manager,
+        Ctrl+S / Ctrl+T / Ctrl+W tab control.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ================= SCREENSHOTS ================= -->
+<section class="block" id="screens">
   <div class="wrap">
-    <div style="text-align:center">
-      <div class="kicker">Tour</div>
-      <h2 class="title">See it in action</h2>
-      <p class="lede">All data in these screenshots is demo data â€” no real servers involved.</p>
+    <div class="center">
+      <div class="kicker reveal">Screenshots</div>
+      <h2 class="title reveal">See it in action</h2>
+      <p class="lede reveal center">All data in these screenshots is demo data (demo hosts, fake files) - nothing from a real server.</p>
     </div>
 
     <div class="tour">
-      <div class="txt">
+      <div class="txt reveal">
         <div class="kicker">01</div>
         <h3>Browse two worlds side by side</h3>
-        <p>One window, two panes, full column info (size, mtime, type) and instant filters.</p>
+        <p>Local on the left, server on the right. Size, modification time and type for every
+        entry, instant filter, and directory compare that marks what differs.</p>
         <ul>
-          <li>Multi-tab sessions per host</li>
-          <li>Drive quick-picks &amp; home shortcuts</li>
-          <li>Directory compare highlights differences</li>
+          <li>Multiple sessions in tabs, protocol badge per tab</li>
+          <li>Drive picker and home/downloads shortcuts</li>
+          <li>Directory compare with marks for one-side and size-diff entries</li>
         </ul>
       </div>
-      <div class="img"><img src="assets/shot-main.png" alt="Dual-pane browsing" loading="lazy"></div>
+      <div class="img">
+        <div class="shot3d">
+          <div class="shot-frame"><span class="dot r"></span><span class="dot y"></span><span class="dot g"></span><span class="cap">Dual-pane browse</span></div>
+          <img src="assets/shot-main.png" alt="Dual-pane browsing" loading="lazy">
+        </div>
+      </div>
     </div>
 
-    <div class="tour">
-      <div class="txt">
+    <div class="tour rev">
+      <div class="txt reveal">
         <div class="kicker">02</div>
         <h3>A queue that never loses its nerve</h3>
-        <p>Progress, speed and ETA for every job. Pause everything, retry failures, clear finished â€” and the queue keeps working across reconnects.</p>
+        <p>Progress, speed and ETA per job. Pause everything, retry failures, clear finished -
+        and queued jobs survive disconnects via auto-reconnect.</p>
+        <ul>
+          <li>1-6 parallel transfers (per-queue setting)</li>
+          <li>Pause / resume all, retry failed items in one click</li>
+          <li>Per-queue KB/s speed limit</li>
+        </ul>
       </div>
-      <div class="img"><img src="assets/shot-queue.png" alt="Transfer queue" loading="lazy"></div>
+      <div class="img">
+        <div class="shot3d">
+          <div class="shot-frame"><span class="dot r"></span><span class="dot y"></span><span class="dot g"></span><span class="cap">Transfer queue</span></div>
+          <img src="assets/shot-queue.png" alt="Transfer queue" loading="lazy">
+        </div>
+      </div>
     </div>
 
     <div class="tour">
-      <div class="txt">
+      <div class="txt reveal">
         <div class="kicker">03</div>
-        <h3>Sites saved &amp; encrypted</h3>
-        <p>Store as many servers as you need. Passwords are protected with your OS storage (DPAPI on Windows, keychain elsewhere).</p>
+        <h3>Sites saved and encrypted</h3>
+        <p>Store as many servers as you need. Passwords are protected with your operating
+        system's credential storage - never written as plain text.</p>
+        <ul>
+          <li>SFTP key-path and FTPS TLS verification options</li>
+          <li>Default start directory per site</li>
+          <li>Keep-alive and resume defaults per site</li>
+        </ul>
       </div>
-      <div class="img"><img src="assets/shot-sites.png" alt="Site manager" loading="lazy"></div>
+      <div class="img">
+        <div class="shot3d">
+          <div class="shot-frame"><span class="dot r"></span><span class="dot y"></span><span class="dot g"></span><span class="cap">Site manager</span></div>
+          <img src="assets/shot-sites.png" alt="Site manager" loading="lazy">
+        </div>
+      </div>
     </div>
   </div>
 </section>
 
-<section class="block" id="download">
-  <div class="wrap" style="text-align:center">
-    <div class="kicker">Download</div>
-    <h2 class="title">Install TrixFTP</h2>
-    <p class="lede">Real native installers built with electron-builder. Unsigned builds â€” SmartScreen may ask, choose â€œRun anywayâ€.</p>
-    <div class="dl-grid">
-      <div class="dl">
-        <div class="os">ðŸªŸ</div>
-        <h3>Windows</h3>
-        <p>NSIS setup, x64 Â· ~96 MB</p>
-        <a class="btn" href="https://github.com/Hatrix-Digital/TrixFTP/releases/latest" target="_blank" rel="noopener">Download .exe</a>
-        <code>TrixFTP Setup 1.0.0.exe</code>
-      </div>
-      <div class="dl">
-        <div class="os">ðŸ§</div>
-        <h3>Linux</h3>
-        <p>Build from source (AppImage planned)</p>
-        <a class="btn ghost" href="https://github.com/Hatrix-Digital/TrixFTP" target="_blank" rel="noopener">Build guide</a>
-        <code>npm install && npm run dist -- --linux</code>
-      </div>
-      <div class="dl">
-        <div class="os">ðŸŽ</div>
-        <h3>macOS</h3>
-        <p>Build on a Mac host (dmg planned)</p>
-        <a class="btn ghost" href="https://github.com/Hatrix-Digital/TrixFTP" target="_blank" rel="noopener">Build guide</a>
-        <code>npm install && npm run dist -- --mac</code>
-      </div>
+<!-- ================= SPECS ================= -->
+<section class="block" id="specs" style="background:#fff; border-top:1px solid var(--line); border-bottom:1px solid var(--line);">
+  <div class="wrap center">
+    <div class="kicker reveal">Specifications</div>
+    <h2 class="title reveal">Under the hood</h2>
+    <div class="two-col" style="text-align:left">
+      <table class="spec reveal">
+        <tr><th colspan="2">Protocols and engines</th></tr>
+        <tr><td>FTP</td><td>full client incl. MLSD, PRET, UTF-8, passive (EPSV/PASV), keep-alive NOOP</td></tr>
+        <tr><td>FTPS</td><td>explicit TLS (AUTH TLS + PBSZ/PROT), optional certificate verification</td></tr>
+        <tr><td>SFTP</td><td>SSH2 - password or key-file auth, chmod, keepalive</td></tr>
+        <tr><td>Engines</td><td><code>basic-ftp</code> and <code>ssh2</code> (MIT licensed)</td></tr>
+        <tr><td>Runtime</td><td>Electron 37 - original UI code, MIT</td></tr>
+      </table>
+      <table class="spec reveal">
+        <tr><th colspan="2">Keyboard reference</th></tr>
+        <tr><td>F5</td><td>refresh both panes</td></tr>
+        <tr><td>F8 / Ctrl+S</td><td>site manager</td></tr>
+        <tr><td>Ctrl+T / Ctrl+W</td><td>new tab / close tab</td></tr>
+        <tr><td>F2 / Delete</td><td>rename / delete selection</td></tr>
+        <tr><td>letters a-z</td><td>type-ahead: jump to first item with that prefix (repeat to cycle)</td></tr>
+        <tr><td>Ctrl+B / Ctrl+L</td><td>queue dock / collapse dock</td></tr>
+      </table>
     </div>
-    <p class="dim-row">Runs on Electron 37 Â· engines: <b>basic-ftp</b> for FTP/FTPS Â· <b>ssh2</b> for SFTP Â· original UI code Â· MIT licensed.</p>
   </div>
 </section>
+
+<!-- ================= DOWNLOAD ================= -->
+<section class="block" id="download">
+  <div class="wrap">
+    <div class="dl-band reveal">
+      <div>
+        <div class="kicker" style="color:#8fc0f7">Download v1.0.0</div>
+        <h2>Get TrixFTP for your platform</h2>
+        <p>Native installers built and signed-in-CI by electron-builder. Builds are not
+        code-signed, so your OS may show a security prompt - that is expected for open
+        source software without a paid certificate.</p>
+      </div>
+      <div class="r">
+        <a class="btn" href="https://github.com/Hatrix-Digital/TrixFTP/releases/latest" target="_blank" rel="noopener">Download latest release</a>
+        <a class="btn" style="background:#ffffff1c;color:#fff" href="https://github.com/Hatrix-Digital/TrixFTP/actions/workflows/build.yml" target="_blank" rel="noopener">CI build runs</a>
+      </div>
+      <div class="dl-note">
+        Windows: Setup (NSIS, x64) + portable &middot; macOS: dmg + zip (Intel/ARM) &middot;
+        Linux: AppImage + .deb (amd64). Build from source: <b>npm install &amp;&amp; npm run dist</b>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ================= FAQ ================= -->
+<section class="block" style="padding-top:20px;">
+  <div class="wrap center">
+    <div class="kicker reveal">FAQ</div>
+    <h2 class="title reveal">Common questions</h2>
+    <div class="faq" style="text-align:left">
+      <details class="reveal" open>
+        <summary>Is TrixFTP free?</summary>
+        <p>Yes. It is open source under the MIT license - use it personally or commercially,
+        view and modify the code freely.</p>
+      </details>
+      <details class="reveal">
+        <summary>Why does Windows show "unknown publisher"?</summary>
+        <p>Installers are built in CI but not code-signed (a paid certificate is required).
+        Choose "More info - Run anyway". Or build locally from source.</p>
+      </details>
+      <details class="reveal">
+        <summary>Where are my site passwords stored?</summary>
+        <p>Encrypted with the operating system credential store (Windows DPAPI, macOS
+        keychain, Linux libsecret via Electron safeStorage). Init files are never plain text.</p>
+      </details>
+      <details class="reveal">
+        <summary>What happens when the server drops my connection mid-queue?</summary>
+        <p>Nothing dramatic: the remaining jobs automatically re-attach to a live session
+        for the same host, or open a new connection using the stored site settings.
+        Interrupted files resume from the byte offset.</p>
+      </details>
+      <details class="reveal">
+        <summary>Does it support both FTPS and SFTP?</summary>
+        <p>Yes - FTP with explicit TLS (FTPS) and SSH File Transfer Protocol (SFTP v3)
+        including key based authentication. Plain FTP is also supported where allowed.</p>
+      </details>
+    </div>
+  </div>
+</section>
+
+</main>
 
 <footer>
-  <div class="wrap">
-    <div>Made for people who move files for a living. âœˆï¸</div>
-    <div class="dim-row">
-      TrixFTP â€” Â© 2026 Â· <a href="https://github.com/Hatrix-Digital/TrixFTP" target="_blank" rel="noopener">GitHub</a> Â·
-      MIT License Â· All screenshots use demo data.
-    </div>
+  <div class="wrap foot">
+    <span class="brand">
+      <svg viewBox="0 0 28 28" width="26" height="26" aria-label="TrixFTP">
+        <defs><linearGradient id="lg2" x1="0" y1="0" x2="1" y2="1">
+          <stop offset="0" stop-color="#3d8fe0"/><stop offset="1" stop-color="#174a8f"/>
+        </linearGradient></defs>
+        <rect x="0.5" y="0.5" width="27" height="27" rx="8" fill="url(#lg2)"/>
+        <g stroke="#fff" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" fill="none">
+          <path d="M10 19 V 9.5"/><path d="M6.7 12.4 L10 9 L13.3 12.4"/>
+          <path d="M18 9.5 V 19"/><path d="M14.7 15.6 L18 19 L21.3 15.6"/>
+        </g>
+      </svg>
+      Trix<b style="color:#1667c7">FTP</b>
+    </span>
+    <span>Copyright 2026 - MIT License</span>
+    <span style="margin-left:auto">
+      <a href="https://github.com/Hatrix-Digital/TrixFTP" target="_blank" rel="noopener">GitHub</a> &middot;
+      <a href="https://github.com/Hatrix-Digital/TrixFTP/releases" target="_blank" rel="noopener">Releases</a> &middot;
+      <a href="https://github.com/Hatrix-Digital/TrixFTP/issues" target="_blank" rel="noopener">Issues</a>
+    </span>
   </div>
 </footer>
 
-<script src="https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.min.js"></script>
 <script>
-  // ------------- 3D background: particle data-stream + wireframe tunnel -------------
+  // sticky header shadow
+  var bar = document.getElementById('topbar');
+  addEventListener('scroll', function () { bar.classList.toggle('scrolled', scrollY > 8); }, { passive: true });
+
+  // hero screenshot 3D tilt
   (function () {
-    const canvas = document.getElementById('scene3d');
-    const renderer = new THREE.WebGLRenderer({ canvas, antialias: true, alpha: true });
-    renderer.setPixelRatio(Math.min(devicePixelRatio, 2));
-    const scene = new THREE.Scene();
-    scene.fog = new THREE.Fog(0x0b1220, 14, 42);
-    const camera = new THREE.PerspectiveCamera(62, innerWidth / innerHeight, .1, 100);
-    camera.position.set(0, 0, 16);
-
-    // particle streams (packets moving along the pipeline)
-    const N = 900;
-    const pos = new Float32Array(N * 3);
-    const speed = new Float32Array(N);
-    for (let i = 0; i < N; i++) {
-      const arm = Math.floor(i / 150); // 6 arms
-      pos[i * 3] = (Math.random() - .5) * 46;
-      pos[i * 3 + 1] = (Math.random() - .5) * 26;
-      pos[i * 3 + 2] = -Math.random() * 44;
-      speed[i] = .01 + Math.random() * .035;
-    }
-    const dot = document.createElement('canvas');
-    dot.width = dot.height = 64;
-    const ctx = dot.getContext('2d');
-    const g = ctx.createRadialGradient(32, 32, 0, 32, 32, 32);
-    g.addColorStop(0, '#ffffff');
-    g.addColorStop(.25, '#7db6ff');
-    g.addColorStop(1, '#2c7be500');
-    ctx.fillStyle = g; ctx.fillRect(0, 0, 64, 64);
-    const tex = new THREE.CanvasTexture(dot);
-    const geo = new THREE.BufferGeometry();
-    geo.setAttribute('position', new THREE.BufferAttribute(pos, 3));
-    const mat = new THREE.PointsMaterial({ size: .42, map: tex, transparent: true, depthWrite: false, blending: THREE.AdditiveBlending, color: 0x6ea8ff });
-    const points = new THREE.Points(geo, mat);
-    scene.add(points);
-
-    // wireframe torus tunnel accents
-    const rings = [];
-    for (let i = 0; i < 5; i++) {
-      const r = new THREE.Mesh(
-        new THREE.TorusGeometry(6.5 + i * .9, .05, 8, 64),
-        new THREE.MeshBasicMaterial({ color: 0x2c7be5, transparent: true, opacity: .16 })
-      );
-      r.position.z = -6 - i * 7;
-      rings.push(r); scene.add(r);
-    }
-
-    // floating arrow cubes (up/down, like the logo)
-    const cubes = [];
-    for (let i = 0; i < 7; i++) {
-      const c = new THREE.Mesh(
-        new THREE.BoxGeometry(.8, .8, .08),
-        new THREE.MeshBasicMaterial({ color: i % 2 ? 0x55a1ff : 0x19c37d, wireframe: true, transparent: true, opacity: .35 })
-      );
-      c.position.set((Math.random() - .5) * 22, (Math.random() - .5) * 10, -4 - Math.random() * 18);
-      c.rotation.set(Math.random(), Math.random(), Math.random());
-      c.userData.spin = (Math.random() - .5) * .004;
-      cubes.push(c); scene.add(c);
-    }
-
-    let mx = 0, my = 0, t0 = 0;
-    addEventListener('mousemove', e => { mx = (e.clientX / innerWidth - .5); my = (e.clientY / innerHeight - .5); });
-    addEventListener('resize', () => {
-      camera.aspect = innerWidth / innerHeight;
-      camera.updateProjectionMatrix();
-      renderer.setSize(innerWidth, innerHeight);
+    var el = document.getElementById('tiltShot');
+    el.addEventListener('mousemove', function (e) {
+      var r = el.getBoundingClientRect();
+      var nx = (e.clientX - r.left) / r.width - 0.5;
+      var ny = (e.clientY - r.top) / r.height - 0.5;
+      el.style.transform = 'rotateY(' + (nx * 8) + 'deg) rotateX(' + (-ny * 5) + 'deg) translateZ(14px)';
     });
-    renderer.setSize(innerWidth, innerHeight);
-
-    function tick(now) {
-      const dt = Math.min(50, (now - t0) || 16); t0 = now;
-      const p = geo.attributes.position.array;
-      for (let i = 0; i < N; i++) {
-        p[i * 3 + 2] += speed[i] * dt * .06;
-        if (p[i * 3 + 2] > 18) p[i * 3 + 2] = -44;
-      }
-      geo.attributes.position.needsUpdate = true;
-      for (const c of cubes) c.rotation.x += c.userData.spin, c.rotation.y += c.userData.spin;
-      camera.position.x += ((mx * 2.2) - camera.position.x) * .04;
-      camera.position.y += ((-my * 1.4) - camera.position.y) * .04;
-      camera.lookAt(0, 0, -6);
-      renderer.render(scene, camera);
-      requestAnimationFrame(tick);
-    }
-    requestAnimationFrame(tick);
+    el.addEventListener('mouseleave', function () { el.style.transform = ''; });
   })();
 
-  // ------------- hero screenshot 3D tilt -------------
+  // scroll reveal
   (function () {
-    const el = document.getElementById('heroShot');
-    const parent = el.parentElement;
-    parent.addEventListener('mousemove', e => {
-      const r = parent.getBoundingClientRect();
-      const nx = (e.clientX - r.left) / r.width - .5;
-      const ny = (e.clientY - r.top) / r.height - .5;
-      el.style.transform = `rotateY(${nx * 9}deg) rotateX(${-ny * 6}deg) translateZ(18px)`;
-    });
-    parent.addEventListener('mouseleave', () => { el.style.transform = 'rotateY(0) rotateX(0)'; });
+    var io = new IntersectionObserver(function (entries) {
+      entries.forEach(function (en) { if (en.isIntersecting) { en.target.classList.add('in'); io.unobserve(en.target); } });
+    }, { threshold: .12 });
+    document.querySelectorAll('.reveal').forEach(function (n) { io.observe(n); });
   })();
 </script>
+
 </body>
 </html>
