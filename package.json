@@ -1,7 +1,7 @@
 {
   "name": "trixftp",
   "productName": "TrixFTP",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "TrixFTP - fast, modern dual-pane FTP/FTPS/SFTP client",
   "main": "main.js",
   "author": "TrixFTP Team <trixftp@users.noreply.github.com>",
@@ -34,24 +34,29 @@
       "target": [
         "nsis",
         "portable"
-      ]
+      ],
+      "icon": "build/icon.ico"
     },
     "nsis": {
       "oneClick": true,
-      "perMachine": false
+      "perMachine": false,
+      "installerIcon": "build/icon.ico",
+      "uninstallerIcon": "build/icon.ico"
     },
     "linux": {
       "target": [
         "AppImage",
         "deb"
       ],
-      "category": "Network"
+      "category": "Network",
+      "icon": "build/icon.png"
     },
     "mac": {
       "target": [
         "dmg"
       ],
-      "category": "public.app-category.file-transfer"
+      "category": "public.app-category.file-transfer",
+      "icon": "build/icon.icns"
     }
   },
   "allowScripts": {

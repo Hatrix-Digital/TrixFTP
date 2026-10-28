@@ -276,12 +276,19 @@ input[type="checkbox"] { accent-color: var(--accent); width: 15px; height: 15px;
 
 /* ---------- status bar ---------- */
 #statusBar {
-  display: flex; justify-content: space-between; gap: 12px;
+  display: flex; align-items: center; gap: 26px;
   padding: 5px 16px; background: var(--card);
   border-top: 1px solid var(--line);
   color: var(--fg2); font-size: 11.5px;
 }
 #statusBar span { overflow: hidden; white-space: nowrap; text-overflow: ellipsis; }
+#statusBar span#stLeft { flex: 1 1 auto; }
+
+#statusBar .st-brand {
+  display: inline-flex; align-items: center; gap: 6px; flex-shrink: 0; overflow: visible;
+}
+#statusBar .st-brand .st-logo { width: 14px; height: 14px; display: block; }
+#statusBar .st-brand b { font-size: 10.5px; font-weight: 800; letter-spacing: .3px; color: var(--head); }
 
 /* ---------- context menu ---------- */
 #ctxMenu {

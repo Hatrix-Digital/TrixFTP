@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html>
+<head><meta charset="utf-8"><style>html,body{margin:0;background:#fff}</style></head>
+<body>
+<img id="src" style="display:none">
+<script>
+  // Draw build/icon.svg onto canvases at every icon size and return PNG data URLs.
+  window.run = function (sizes) {
+    var img = document.getElementById('src');
+    var out = {};
+    for (var i = 0; i < sizes.length; i++) {
+      (function (s) {
+        var c = document.createElement('canvas');
+        c.width = s; c.height = s;
+        c.getContext('2d').drawImage(img, 0, 0, s, s);
+        out[s] = c.toDataURL('image/png');
+      })(sizes[i]);
+    }
+    return out;
+  };
+</script>
+</body>
+</html>

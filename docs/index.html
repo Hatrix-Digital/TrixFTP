@@ -6,7 +6,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>TrixFTP - FTP, FTPS and SFTP client for Windows, macOS and Linux</title>
 <meta name="description" content="TrixFTP is a fast dual-pane FTP / FTPS / SFTP desktop client with a transfer queue, site manager, drag and drop, resume, speed limits and auto-reconnect. Free and open source (MIT).">
-<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 28 28'%3E%3Cdefs%3E%3ClinearGradient id='g' x1='0' y1='0' x2='1' y2='1'%3E%3Cstop offset='0' stop-color='%233d8fe0'/%3E%3Cstop offset='1' stop-color='%23174a8f'/%3E%3C/linearGradient%3E%3C/defs%3E%3Crect x='0.5' y='0.5' width='27' height='27' rx='8' fill='url(%23g)'/%3E%3Cg stroke='%23fff' stroke-width='2.4' stroke-linecap='round' stroke-linejoin='round' fill='none'%3E%3Cpath d='M10 19 V 9.5'/%3E%3Cpath d='M6.7 12.4 L10 9 L13.3 12.4'/%3E%3Cpath d='M18 9.5 V 19'/%3E%3Cpath d='M14.7 15.6 L18 19 L21.3 15.6'/%3E%3C/g%3E%3C/svg%3E">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 128 128'%3E%3Cdefs%3E%3ClinearGradient id='g' x1='0' y1='0' x2='1' y2='1'%3E%3Cstop offset='0' stop-color='%234aa0e8'/%3E%3Cstop offset='1' stop-color='%23144a8c'/%3E%3C/linearGradient%3E%3C/defs%3E%3Crect width='128' height='128' rx='27' fill='url(%23g)'/%3E%3Cg stroke='%23fff' stroke-width='10' stroke-linecap='round' stroke-linejoin='round' fill='none'%3E%3Cpath d='M46 88 V44'/%3E%3Cpath d='M29 61 L46 43 L63 61'/%3E%3Cpath d='M82 40 V84'/%3E%3Cpath d='M65 67 L82 85 L99 67'/%3E%3C/g%3E%3C/svg%3E">
 <style>
   :root {
     --blue: #1667c7;
@@ -220,15 +220,16 @@
 <header class="top" id="topbar">
   <div class="wrap top-in">
     <a class="brand" href="#top">
-      <svg viewBox="0 0 28 28" aria-label="TrixFTP">
+      <svg viewBox="0 0 128 128" aria-label="TrixFTP">
         <defs><linearGradient id="lg" x1="0" y1="0" x2="1" y2="1">
-          <stop offset="0" stop-color="#3d8fe0"/><stop offset="1" stop-color="#174a8f"/>
+          <stop offset="0" stop-color="#4aa0e8"/><stop offset="1" stop-color="#144a8c"/>
         </linearGradient></defs>
-        <rect x="0.5" y="0.5" width="27" height="27" rx="8" fill="url(#lg)"/>
-        <rect x="0.5" y="0.5" width="27" height="10" rx="8" fill="#fff" opacity="0.10"/>
-        <g stroke="#fff" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" fill="none">
-          <path d="M10 19 V 9.5"/><path d="M6.7 12.4 L10 9 L13.3 12.4"/>
-          <path d="M18 9.5 V 19"/><path d="M14.7 15.6 L18 19 L21.3 15.6"/>
+        <rect width="128" height="128" rx="27" fill="url(#lg)"/>
+        <rect width="128" height="52" rx="27" fill="#fff" opacity="0.10"/>
+        <rect y="30" width="128" height="22" fill="#fff" opacity="0.045"/>
+        <g stroke="#fff" stroke-width="10" stroke-linecap="round" stroke-linejoin="round" fill="none">
+          <path d="M46 88 V 44"/><path d="M29 61 L46 43 L63 61"/>
+          <path d="M82 40 V 84"/><path d="M65 67 L82 85 L99 67"/>
         </g>
       </svg>
       Trix<b>FTP</b>
@@ -250,7 +251,7 @@
 <section class="hero">
   <div class="wrap hero-grid">
     <div class="hero-copy">
-      <div class="kicker">v1.0.0 &middot; Free &middot; Open source &middot; MIT</div>
+      <div class="kicker">v1.0.1 &middot; Free &middot; Open source &middot; MIT</div>
       <h1>The FTP client that <span>keeps the queue moving</span></h1>
       <p class="lead">
         TrixFTP is a dual-pane FTP / FTPS / SFTP client for the desktop: drag and drop,
@@ -286,7 +287,7 @@
       <div class="shot3d" id="tiltShot">
         <div class="shot-frame">
           <span class="dot r"></span><span class="dot y"></span><span class="dot g"></span>
-          <span class="cap">TrixFTP 1.0.0 - dual-pane browse (demo data)</span>
+          <span class="cap">TrixFTP 1.0.1 - dual-pane browse (demo data)</span>
         </div>
         <img src="assets/shot-main.png" alt="TrixFTP main window: local folder on the left, remote server on the right" loading="eager">
       </div>
@@ -483,7 +484,7 @@
   <div class="wrap">
     <div class="dl-band reveal">
       <div>
-        <div class="kicker" style="color:#8fc0f7">Download v1.0.0</div>
+        <div class="kicker" style="color:#8fc0f7">Download v1.0.1</div>
         <h2>Get TrixFTP for your platform</h2>
         <p>Native installers built and signed-in-CI by electron-builder. Builds are not
         code-signed, so your OS may show a security prompt - that is expected for open
@@ -542,14 +543,16 @@
 <footer>
   <div class="wrap foot">
     <span class="brand">
-      <svg viewBox="0 0 28 28" width="26" height="26" aria-label="TrixFTP">
+      <svg viewBox="0 0 128 128" width="26" height="26" aria-label="TrixFTP">
         <defs><linearGradient id="lg2" x1="0" y1="0" x2="1" y2="1">
-          <stop offset="0" stop-color="#3d8fe0"/><stop offset="1" stop-color="#174a8f"/>
+          <stop offset="0" stop-color="#4aa0e8"/><stop offset="1" stop-color="#144a8c"/>
         </linearGradient></defs>
-        <rect x="0.5" y="0.5" width="27" height="27" rx="8" fill="url(#lg2)"/>
-        <g stroke="#fff" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" fill="none">
-          <path d="M10 19 V 9.5"/><path d="M6.7 12.4 L10 9 L13.3 12.4"/>
-          <path d="M18 9.5 V 19"/><path d="M14.7 15.6 L18 19 L21.3 15.6"/>
+        <rect width="128" height="128" rx="27" fill="url(#lg2)"/>
+        <rect width="128" height="52" rx="27" fill="#fff" opacity="0.10"/>
+        <rect y="30" width="128" height="22" fill="#fff" opacity="0.045"/>
+        <g stroke="#fff" stroke-width="10" stroke-linecap="round" stroke-linejoin="round" fill="none">
+          <path d="M46 88 V 44"/><path d="M29 61 L46 43 L63 61"/>
+          <path d="M82 40 V 84"/><path d="M65 67 L82 85 L99 67"/>
         </g>
       </svg>
       Trix<b style="color:#1667c7">FTP</b>

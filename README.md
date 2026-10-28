@@ -40,13 +40,13 @@ npm run test:engine  # engine smoke test (spins up a local FTP server)
 npm run dist         # build installers for the current OS
 ```
 
-## Installers (v1.0.0)
+## Installers (v1.0.1)
 
 | OS | Artifact |
 |---|---|
-| Windows x64 | `TrixFTP Setup 1.0.0.exe` (NSIS) + portable `.exe` |
-| macOS | `TrixFTP-1.0.0.dmg` + `.zip` *(unsigned — right-click → Open)* |
-| Linux | `TrixFtp-1.0.0.AppImage` + `.deb` |
+| Windows x64 | `TrixFTP Setup 1.0.1.exe` (NSIS) + portable `.exe` |
+| macOS | `TrixFTP-1.0.1.dmg` + `.zip` *(unsigned — right-click → Open)* |
+| Linux | `TrixFtp-1.0.1.AppImage` + `.deb` |
 
 Grab them from [**Releases**](https://github.com/Hatrix-Digital/TrixFTP/releases) — or trigger a
 build yourself: push a `v*` tag or run the **Build & Release** workflow manually

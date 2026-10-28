@@ -147,6 +147,9 @@ function createWindow() {
     title: 'TrixFTP',
     backgroundColor: '#0e1116',
     autoHideMenuBar: true,
+    icon: fs.existsSync(path.join(__dirname, 'build', 'icon.png'))
+      ? path.join(__dirname, 'build', 'icon.png')
+      : undefined,
     webPreferences: {
       preload: path.join(__dirname, 'preload.js'),
       contextIsolation: true,

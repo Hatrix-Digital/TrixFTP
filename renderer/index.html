@@ -11,22 +11,21 @@
   <!-- top toolbar -->
   <header id="toolbar">
     <div class="brand">
-      <svg class="logo" viewBox="0 0 28 28" aria-label="TrixFTP logo">
+      <svg class="logo" viewBox="0 0 128 128" aria-label="TrixFTP logo">
         <defs>
           <linearGradient id="lg" x1="0" y1="0" x2="1" y2="1">
-            <stop offset="0" stop-color="#3d8fe0"/>
-            <stop offset="1" stop-color="#174a8f"/>
+            <stop offset="0" stop-color="#4aa0e8"/>
+            <stop offset="1" stop-color="#144a8c"/>
           </linearGradient>
         </defs>
-        <rect x="0.5" y="0.5" width="27" height="27" rx="8" fill="url(#lg)"/>
-        <rect x="0.5" y="0.5" width="27" height="10" rx="8" fill="#ffffff" opacity="0.10"/>
-        <!-- up arrow (left) -->
-        <g stroke="#ffffff" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" fill="none">
-          <path d="M10 19 V 9.5"/>
-          <path d="M6.7 12.4 L10 9 L13.3 12.4"/>
-          <!-- down arrow (right) -->
-          <path d="M18 9.5 V 19"/>
-          <path d="M14.7 15.6 L18 19 L21.3 15.6"/>
+        <rect x="0" y="0" width="128" height="128" rx="27" fill="url(#lg)"/>
+        <rect x="0" y="0" width="128" height="52" rx="27" fill="#ffffff" opacity="0.10"/>
+        <rect x="0" y="30" width="128" height="22" fill="#ffffff" opacity="0.045"/>
+        <g stroke="#ffffff" stroke-width="10" stroke-linecap="round" stroke-linejoin="round" fill="none">
+          <path d="M46 88 V 44"/>
+          <path d="M29 61 L46 43 L63 61"/>
+          <path d="M82 40 V 84"/>
+          <path d="M65 67 L82 85 L99 67"/>
         </g>
       </svg>
       <span class="name">Trix<b>FTP</b></span>
@@ -146,6 +145,22 @@
   </section>
 
   <footer id="statusBar">
+    <span class="st-brand">
+      <svg class="st-logo" viewBox="0 0 128 128" aria-label="TrixFTP">
+        <defs>
+          <linearGradient id="lgsb" x1="0" y1="0" x2="1" y2="1">
+            <stop offset="0" stop-color="#4aa0e8"/>
+            <stop offset="1" stop-color="#144a8c"/>
+          </linearGradient>
+        </defs>
+        <rect x="0" y="0" width="128" height="128" rx="27" fill="url(#lgsb)"/>
+        <g stroke="#ffffff" stroke-width="12" stroke-linecap="round" stroke-linejoin="round" fill="none">
+          <path d="M46 88 V 44"/><path d="M29 61 L46 43 L63 61"/>
+          <path d="M82 40 V 84"/><path d="M65 67 L82 85 L99 67"/>
+        </g>
+      </svg>
+      <b>TrixFTP</b>
+    </span>
     <span id="stLeft">Local: ready</span>
     <span id="stRight">Queue: idle</span>
   </footer>
