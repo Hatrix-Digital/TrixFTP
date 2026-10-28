@@ -1,7 +1,7 @@
 {
   "name": "trixftp",
   "productName": "TrixFTP",
-  "version": "1.0.1",
+  "version": "1.1.0",
   "description": "TrixFTP - fast, modern dual-pane FTP/FTPS/SFTP client",
   "main": "main.js",
   "author": "TrixFTP Team <trixftp@users.noreply.github.com>",
@@ -10,6 +10,8 @@
     "start": "electron .",
     "dev": "electron . --dev",
     "test:engine": "node test/engine.test.js",
+    "test:queue": "node test/queue.test.js",
+    "test:updater": "node test/updater.test.js",
     "dist": "electron-builder"
   },
   "dependencies": {

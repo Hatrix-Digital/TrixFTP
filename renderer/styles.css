@@ -290,6 +290,47 @@ input[type="checkbox"] { accent-color: var(--accent); width: 15px; height: 15px;
 #statusBar .st-brand .st-logo { width: 14px; height: 14px; display: block; }
 #statusBar .st-brand b { font-size: 10.5px; font-weight: 800; letter-spacing: .3px; color: var(--head); }
 
+#statusBar #btnUpdates {
+  flex: none; font-size: 10.5px; font-weight: 700; color: var(--head);
+  background: var(--headbg); border: 1px solid var(--line); border-radius: 4px;
+  padding: 2px 9px; cursor: pointer;
+}
+#statusBar #btnUpdates:hover { border-color: #b9d3ec; color: #17466f; }
+
+/* ---------- auto-update box ---------- */
+#updateBox {
+  position: fixed; right: 12px; bottom: 34px; z-index: 90;
+  width: 320px; background: var(--card); border: 1px solid var(--line);
+  border-radius: 10px; padding: 12px 14px; font-size: 12.5px;
+  box-shadow: 0 14px 40px #0e111633;
+  animation: ux-in .25s ease;
+}
+@keyframes ux-in { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: none; } }
+#updateBox[hidden] { display: none; }
+#updateBox .ux-head { display: flex; align-items: center; gap: 8px; }
+#updateBox .ux-logo { width: 22px; height: 22px; flex-shrink: 0; }
+#updateBox .ux-head b { color: var(--head); font-size: 13px; }
+#updateBox .ux-ver { color: var(--accent); font-weight: 800; font-size: 11.5px; }
+#updateBox .ux-close {
+  margin-left: auto; border: 0; background: none; color: var(--fg2);
+  font-size: 16px; cursor: pointer; padding: 0 2px; line-height: 1;
+}
+#updateBox .ux-close:hover { color: #c0392b; }
+#updateBox .ux-text { margin: 8px 0 4px; color: var(--fg2); line-height: 1.45; }
+#updateBox .ux-bar { height: 6px; border-radius: 3px; background: var(--headbg); overflow: hidden; margin: 10px 0 2px; }
+#updateBox .ux-bar[hidden] { display: none; }
+#updateBox #uxFill { height: 100%; width: 0%; background: linear-gradient(90deg, #4aa0e8, #1667c7); border-radius: 3px; transition: width .2s; }
+#updateBox .ux-actions { display: flex; gap: 8px; margin-top: 10px; }
+#updateBox .ux-actions button {
+  font-size: 12px; font-weight: 700; cursor: pointer; border-radius: 6px;
+  padding: 6px 12px; border: 1px solid var(--line); background: #fff; color: var(--head);
+}
+#updateBox .ux-actions button.primary {
+  background: linear-gradient(180deg, #3d84dc, #1d4f80); color: #fff; border-color: transparent;
+}
+#updateBox .ux-actions button.primary:hover { filter: brightness(1.08); }
+#updateBox .ux-actions button:not(.primary):hover { border-color: #b9d3ec; }
+
 /* ---------- context menu ---------- */
 #ctxMenu {
   position: fixed; display: none; z-index: 1000;

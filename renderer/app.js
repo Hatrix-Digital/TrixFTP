@@ -29,6 +29,7 @@
     settings = store.settings || {};
     window.__isWin = store.isWin;
     window.__sep = store.sep;
+    window.__plat = store.platform;
 
     panes.local = new FilePane(el('paneLocal'), 'local', paneHooks());
     panes.remote = new FilePane(el('paneRemote'), 'remote', paneHooks());
@@ -63,6 +64,7 @@
     bindGlobalKeys();
     bindDndBookkeeping();
     bindQueueSettings();
+    wireUpdater();
 
     T.onLog(({ level, msg }) => logLine(level, msg));
     T.onSessionClosed(({ sid }) => {
@@ -453,6 +455,104 @@
 
   // ================= queue =================
   let hadRealTransfer = false; // any job actually ran since the last allDone
+
+  // ================= app auto-update =================
+  let upd = { seen: false };        // last update payload we acted on
+  let updCache = null;              // last successful update:check result
+
+  function uxb() {
+    const box = el('updateBox');
+    return {
+      title: el('uxTitle'), ver: el('uxVer'), text: el('uxText'),
+      bar: el('uxBar'), fill: el('uxFill'), actions: el('uxActions'), box
+    };
+  }
+  function showUpd(title, version, htmlText, actions, progress) {
+    if (progress === undefined || progress === null) progress = false;
+    const b = uxb();
+    b.title.textContent = title;
+    b.ver.textContent = version || '';
+    b.text.innerHTML = htmlText || '';
+    b.bar.hidden = !progress;
+    if (progress) b.fill.style.width = Math.max(3, Math.min(100, progress)) + '%';
+    b.actions.innerHTML = '';
+    (actions || []).forEach(([label, act, primary]) => {
+      const btn = document.createElement('button');
+      if (primary) btn.className = 'primary';
+      btn.textContent = label;
+      btn.setAttribute('data-ux', act);
+      b.actions.appendChild(btn);
+    });
+    b.box.hidden = false;
+  }
+  function hideUpd() { el('updateBox').hidden = true; }
+
+  function buildUpdText(info) {
+    let s = 'Installed version: <b>' + (info.current || '?') + '</b>';
+    s += '<br>New: <b>' + (info.version || '?') + '</b> - ' + (info.release || 'official build');
+    const platName = { win32: 'Windows installer (NSIS)', darwin: 'macOS disk image (.dmg)', linux: 'Linux AppImage' }[window.__plat] || 'installer';
+    return s + '<br><span style="opacity:.75">' + platName + ' will be downloaded.</span>';
+  }
+  async function onUpdResult(info) {
+    if (!info) return;
+    updCache = info;
+    upd.seen = true;
+    if (info.error) {
+      showUpd('Update check failed', '', (info.error || ''), [['Retry', 'check'], ['Close', 'close']]);
+      return;
+    }
+    if (!info.available) {
+      if (info.manual) ui.toast('You are up to date (v' + info.current + ')', 'ok');
+      return;
+    }
+    showUpd('TrixFTP update available', 'v' + info.version, buildUpdText(info),
+      [['Download & install', 'dl', true], ['Later', 'later']]);
+  }
+
+  function wireUpdater() {
+    T.onUpdateEvent((ev) => {
+      if (ev.type === 'available') {
+        if (updCache && updCache.available) onUpdResult(updCache); // user has not acted yet -> show again
+        else T.updateCheck(); // pull details for the found version
+      } else if (ev.type === 'progress') {
+        showUpd('Downloading update', 'v' + ((updCache && updCache.version) || ''), '', [], ev.pct);
+      } else if (ev.type === 'ready') {
+        const isWin = window.__plat === 'win32';
+        const fname = ((ev.file || updCache && updCache.asset || '').split(/[\\/]/).pop());
+        const txt = isWin
+          ? 'Download finished. Click <b>Restart &amp; install</b> - the app quits and the setup runs silently.'
+          : 'Download finished: <b>' + fname + '</b>. Click <b>Run installer</b> to apply it.';
+        showUpd('Update ready', 'v' + ((updCache && updCache.version) || ''), txt,
+          isWin ? [['Restart & install', 'install', true], ['Show file', 'reveal'], ['Close', 'close']]
+            : [['Run installer', 'install', true], ['Show file', 'reveal'], ['Close', 'close']]);
+      } else if (ev.type === 'installing') {
+        showUpd('Updating TrixFTP', '', 'The update is starting - the app will close now.', []);
+      } else if (ev.type === 'error') {
+        showUpd('Update failed', '', (ev.error || 'Unknown error'), [['Retry check', 'check'], ['GitHub releases', 'page'], ['Close', 'close']]);
+      }
+    });
+
+    el('btnUpdates').addEventListener('click', async () => {
+      showUpd('Checking for updates', '', '', []);
+      const r = await T.updateCheck().catch(e => ({ available: false, error: String(e) }));
+      r.manual = true;
+      onUpdResult(r);
+    });
+    el('uxClose').addEventListener('click', hideUpd);
+    el('uxActions').addEventListener('click', async (e) => {
+      const act = e.target.getAttribute && e.target.getAttribute('data-ux');
+      if (!act) return;
+      try {
+        if (act === 'dl') { showUpd('Downloading update', 'v' + ((updCache && updCache.version) || ''), '', [], 3); await T.updateDownload(); }
+        else if (act === 'later' || act === 'close') hideUpd();
+        else if (act === 'reveal') await T.updateReveal();
+        else if (act === 'install') { const r = await T.updateInstall(); if (r && !r.ok) ui.toast(r.error || 'Could not start the installer', 'err'); }
+        else if (act === 'check') { showUpd('Checking for updates', '', '', []); const r = await T.updateCheck().catch(x => ({ available: false, error: String(x) })); r.manual = true; onUpdResult(r); }
+        else if (act === 'page') await T.updateOpenPage();
+      } catch (err) { ui.toast('Update action failed: ' + err, 'err'); }
+    });
+  }
+
   function onQueueEvent(ev) {
     if (ev.type === 'job' || ev.type === 'progress') {
       if (ev.job.state === 'active' || ev.job.state === 'done' || ev.job.state === 'skipped') hadRealTransfer = true;

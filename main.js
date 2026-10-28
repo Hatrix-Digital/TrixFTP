@@ -8,6 +8,7 @@ const { Store } = require('./lib/store');
 const { Queue } = require('./lib/queue');
 const { FtpEngine } = require('./lib/ftp');
 const { SftpEngine } = require('./lib/sftp');
+const updater = require('./lib/updater');
 const local = require('./lib/local');
 
 const isDev = process.argv.includes('--dev');
@@ -138,7 +139,7 @@ if (!gotLock) {
     if (win) { if (win.isMinimized()) win.restore(); win.focus(); }
   });
 
-  app.whenReady().then(createWindow);
+  app.whenReady().then(() => createWindow()).then(scheduleUpdateChecks);
 }
 
 function createWindow() {
@@ -344,6 +345,111 @@ ipcMain.handle('queue:answer', (e, { token, action, applyAll, newDst }) => {
 
 // ---------- IPC: misc ----------
 ipcMain.handle('app:info', () => ({ version: app.getVersion(), platform: process.platform }));
+
+// ---------- IPC: app auto-update ----------
+// Check: GitHub Releases -> newer tag?  Download: right installer asset.
+// Install: run it (Windows silently) and exit; macOS: mount the dmg.
+let updateState = { ver: null, file: null, busy: false };
+
+function updateSend(ev) { broadcast('update:event', ev); }
+
+async function updaterCheck(manual) {
+  try {
+    const rel = await updater.fetchLatest();
+    const current = app.getVersion();
+    const asset = updater.isNewer(rel.tag_name, current)
+      ? updater.pickAsset(rel, process.platform, process.arch) : null;
+    const res = {
+      available: !!asset,
+      current,
+      version: asset ? rel.tag_name.replace(/^v/, '') : null,
+      release: rel.name || rel.tag_name,
+      url: rel.html_url,
+      asset: asset ? asset.name : null
+    };
+    if (asset) updateState.ver = res.version;
+    if (manual || (asset && win)) updateSend({ type: res.available ? 'available' : 'none' });
+    return res;
+  } catch (err) {
+    if (manual) updateSend({ type: 'error', error: String(err.message || err) });
+    return { available: false, error: String(err.message || err) };
+  }
+}
+
+ipcMain.handle('update:check', () => updaterCheck(true));
+
+ipcMain.handle('update:download', async () => {
+  if (updateState.busy) return { ok: false, error: 'busy' };
+  try {
+    updateState.busy = true;
+    const rel = await updater.fetchLatest();
+    const asset = updater.isNewer(rel.tag_name, app.getVersion())
+      ? updater.pickAsset(rel, process.platform, process.arch) : null;
+    if (!asset) throw new Error('No matching installer in the latest release');
+    const dir = fs.mkdtempSync(path.join(app.getPath('temp'), 'trixftp-update-'));
+    const dest = path.join(dir, asset.name.replace(/[^\w.()-]+/g, '_'));
+    await updater.downloadFile(asset.browser_download_url, dest, (pct) => {
+      if (pct >= 0) updateSend({ type: 'progress', pct: pct });
+    });
+    updateState.file = dest;
+    updateState.busy = false;
+    updateSend({ type: 'ready', file: dest });
+    return { ok: true, file: dest };
+  } catch (err) {
+    updateState.busy = false;
+    updateSend({ type: 'error', error: String(err.message || err) });
+    return { ok: false, error: String(err.message || err) };
+  }
+});
+
+ipcMain.handle('update:install', async () => {
+  const f = updateState.file;
+  if (!f || !fs.existsSync(f)) return { ok: false, error: 'Nothing downloaded yet' };
+  try {
+    if (process.platform === 'win32') {
+      // NSIS one-click installer; /S = silent in-place upgrade
+      const child = require('child_process').spawn(f, ['/S'], { detached: true, stdio: 'ignore' });
+      child.unref();
+      setTimeout(() => app.exit(0), 600);
+      updateSend({ type: 'installing' });
+      return { ok: true, mode: 'silent' };
+    }
+    if (process.platform === 'linux') {
+      fs.chmodSync(f, 0o755);
+      const child = require('child_process').spawn(f, [], { detached: true, stdio: 'ignore' });
+      child.unref();
+      setTimeout(() => app.exit(0), 600);
+      updateSend({ type: 'installing' });
+      return { ok: true, mode: 'replace' };
+    }
+    // macOS: mount the dmg and let the user drag the app
+    shell.openPath(f);
+    updateSend({ type: 'installing' });
+    return { ok: true, mode: 'dmg' };
+  } catch (err) {
+    return { ok: false, error: String(err.message || err) };
+  }
+});
+
+ipcMain.handle('update:reveal', async () => {
+  if (updateState.file && fs.existsSync(updateState.file)) {
+    shell.showItemInFolder(updateState.file);
+    return { ok: true };
+  }
+  return { ok: false };
+});
+
+ipcMain.handle('update:openPage', () => { shell.openExternal('https://github.com/' + updater.REPO + '/releases/latest'); return { ok: true }; });
+
+// silent checks: shortly after start, then every 6 h
+let updateTimerStarted = false;
+function scheduleUpdateChecks() {
+  if (updateTimerStarted) return;
+  updateTimerStarted = true;
+  setTimeout(updaterCheck, 12000);
+  setInterval(() => { if (win && !win.isDestroyed()) updaterCheck(); }, 6 * 60 * 60 * 1000);
+}
+
 ipcMain.handle('dialog:message', (e, opts) => dialog.showMessageBox(win, opts));
 
 app.on('window-all-closed', () => {

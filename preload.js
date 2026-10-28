@@ -62,7 +62,15 @@ contextBridge.exposeInMainWorld('trix', {
   onSettings: (cb) => on('app:settings', cb),
   onQueueEvent: (cb) => on('queue:event', cb),
   onSessionClosed: (cb) => on('session:closed', cb),
+  onUpdateEvent: (cb) => on('update:event', cb),
   info: () => ipcRenderer.invoke('app:info'),
+
+  // app auto-update
+  updateCheck: () => ipcRenderer.invoke('update:check'),
+  updateDownload: () => ipcRenderer.invoke('update:download'),
+  updateInstall: () => ipcRenderer.invoke('update:install'),
+  updateReveal: () => ipcRenderer.invoke('update:reveal'),
+  updateOpenPage: () => ipcRenderer.invoke('update:openPage'),
 
   // drag&drop: resolve real OS paths of dropped File objects (renderer -> preload -> main)
   dropPaths: (files) => {
