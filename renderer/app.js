@@ -110,7 +110,15 @@
         p = p.replace(/\/{2,}/g, '/');
       }
     } else {
-      if (activeTab() && !activeTab().connected) { ui.toast('Not connected', 'err'); return; }
+      const at = activeTab();
+      if (at && !at.connected) {
+        if (at.cfg) {
+          await connectNow(at.cfg, at.id);
+          if (!activeTab() || !activeTab().connected) { ui.toast('Not connected', 'err'); return; }
+        } else {
+          ui.toast('Not connected', 'err'); return;
+        }
+      }
       p = ('/' + p).replace(/\/{2,}/g, '/').replace(/\/+$/, '') || '/';
     }
     try {
@@ -138,7 +146,19 @@
         setStatus();
       }
     } catch (e) {
-      log('error', 'List "' + p + '": ' + (e.message || e));
+      const msg = String(e.message || e);
+      log('error', 'List "' + p + '": ' + msg);
+      if (side === 'remote') {
+        const t2 = activeTab();
+        if (t2 && t2.cfg && !(opts && opts._retried) && /not connected|session not found|disconnected|closed/i.test(msg)) {
+          try {
+            await connectNow(t2.cfg, t2.id);
+            if (activeTab() && activeTab().connected) {
+              return navigate(side, path, Object.assign({}, opts || {}, { _retried: true }));
+            }
+          } catch (e2) { /* fall through */ }
+        }
+      }
       if (side === 'local') { ui.toast('Cannot open: ' + p, 'err'); }
     }
   }
@@ -242,6 +262,8 @@
     try {
       // engine expects cfg.password; accept legacy cfg.pwd too
       const creds = { ...cfg, password: cfg.password || cfg.pwd || '', user: cfg.user || 'anonymous' };
+      // remember the full connection parameters so we can auto-reconnect later
+      t.cfg = creds;
       log('info', `Connecting to ${creds.host} as ${creds.user} (${creds.proto})...`);
       const res = await T.connect(creds);
       t.sid = res.sid; t.connected = true;
@@ -279,8 +301,38 @@
   }
 
   // ================= actions =================
+  async function ensureRemoteConnected() {
+    let t = activeTab();
+    if (t && t.connected && t.sid) return t;
+    if (t && t.cfg) {
+      await connectNow(t.cfg, t.id);
+      t = activeTab();
+    }
+    return (t && t.connected && t.sid) ? t : null;
+  }
+  async function remoteCall(cmd, args) {
+    let t = await ensureRemoteConnected();
+    if (!t) throw new Error('Not connected');
+    try {
+      return await T.call(t.sid, cmd, args);
+    } catch (e) {
+      const msg = String(e.message || e);
+      if (/not connected|session not found|disconnected|closed/i.test(msg)) {
+        const at = activeTab();
+        if (at && at.cfg) {
+          try { await connectNow(at.cfg, at.id); } catch (e2) { /* ignore */ }
+          const t2 = activeTab();
+          if (t2 && t2.connected && t2.sid) {
+            return await T.call(t2.sid, cmd, args);
+          }
+        }
+      }
+      throw e;
+    }
+  }
+
   async function runAction(side, act, payload) {
-    const t = activeTab();
+    let t = activeTab();
     try {
       if (side === 'local') {
         if (act === 'open') {
@@ -314,6 +366,9 @@
           }
           navigate('local', panes.local.path);
         } else if (act === 'upload') {
+          if (!t || !t.connected) {
+            if (t && t.cfg) { await connectNow(t.cfg, t.id); t = activeTab(); }
+          }
           if (!t || !t.connected) { ui.toast('Not connected', 'err'); return; }
           const sel = selectedPaths(panes.local);
           await queueTransfer(t.sid, 'up', sel, panes.remote.path);
@@ -327,26 +382,29 @@
         }
       } else {
         // remote side
+        if (!t || !t.connected) {
+          if (t && t.cfg) { await connectNow(t.cfg, t.id); t = activeTab(); }
+        }
+        if (!t || !t.connected) { ui.toast('Not connected', 'err'); return; }
         if (act === 'download') {
-          if (!t || !t.connected) { ui.toast('Not connected', 'err'); return; }
           const sel = selectedPaths(panes.remote);
           await queueTransfer(t.sid, 'dn', sel, panes.local.path);
         } else if (act === 'mkdir') {
           ui.promptBox('New remote folder', 'New folder', async (name) => {
             if (!name) return;
-            await T.call(t.sid, 'mkdir', [panes.remote.pathJoin(name)]);
+            await remoteCall('mkdir', [panes.remote.pathJoin(name)]);
             navigate('remote', panes.remote.path);
           });
         } else if (act === 'touch') {
           ui.promptBox('New remote file', 'newfile.txt', async (name) => {
             if (!name) return;
-            await T.call(t.sid, 'touch', [panes.remote.pathJoin(name)]);
+            await remoteCall('touch', [panes.remote.pathJoin(name)]);
             navigate('remote', panes.remote.path);
           });
         } else if (act === 'rename') {
           ui.promptBox('Rename to', payload.name, async (to) => {
             if (!to || to === payload.name) return;
-            await T.call(t.sid, 'rename', [panes.remote.pathJoin(payload.name), panes.remote.pathJoin(to)]);
+            await remoteCall('rename', [panes.remote.pathJoin(payload.name), panes.remote.pathJoin(to)]);
             navigate('remote', panes.remote.path);
           });
         } else if (act === 'delete') {
@@ -354,7 +412,7 @@
           if (!await confirmDelete(names)) return;
           for (const n of names) {
             const it = panes.remote.items.find(i => i.name === n);
-            await T.call(t.sid, 'remove', [panes.remote.pathJoin(n), !!(it && it.isDir)]);
+            await remoteCall('remove', [panes.remote.pathJoin(n), !!(it && it.isDir)]);
           }
           navigate('remote', panes.remote.path);
         } else if (act === 'open') {
@@ -365,7 +423,7 @@
         } else if (act === 'chmod') {
           if (!t || t.proto !== 'sftp') { ui.toast('Changing permissions is available on SFTP', 'err'); return; }
           ui.promptBox('New permissions (octal, e.g. 644)', '644', async (m) => {
-            await T.call(t.sid, 'chmod', [panes.remote.pathJoin(payload.name), m]);
+            await remoteCall('chmod', [panes.remote.pathJoin(payload.name), m]);
             navigate('remote', panes.remote.path);
           });
         } else if (act === 'command') {
@@ -443,7 +501,7 @@
         const st = await T.fsStat(p.pathJoin(name));
         stats = st ? `Size: ${st.size}\nDir: ${st.isDir}\nModified: ${new Date(st.mtime * 1000).toLocaleString()}` : 'no stat';
       } else {
-        const st = await T.call(activeTab().sid, 'stat', [p.pathJoin(name)]);
+        const st = await remoteCall('stat', [p.pathJoin(name)]);
         stats = st ? `Size: ${st.size}\nDir: ${st.isDir}\nModified: ${st.mtime ? new Date(st.mtime * 1000).toLocaleString() : 'unknown'}` : 'no stat';
       }
     } catch (e) { stats = e.message; }
@@ -781,7 +839,7 @@
       el('cmdInput').value = '';
       if (!t || !t.sid) { ui.toast('Not connected', 'err'); return; }
       try {
-        const res = await T.call(t.sid, 'command', [txt]);
+        const res = await remoteCall('command', [txt]);
         log('info', '→ ' + txt + ' ⇒ ' + res);
       } catch (e) { log('error', 'command: ' + (e.message || e)); }
     };

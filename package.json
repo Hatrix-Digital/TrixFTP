@@ -1,7 +1,7 @@
 {
   "name": "trixftp",
   "productName": "TrixFTP",
-  "version": "1.1.0",
+  "version": "1.1.1",
   "description": "TrixFTP - fast, modern dual-pane FTP/FTPS/SFTP client",
   "main": "main.js",
   "author": "TrixFTP Team <trixftp@users.noreply.github.com>",

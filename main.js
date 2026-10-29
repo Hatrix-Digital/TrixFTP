@@ -284,8 +284,29 @@ ipcMain.handle('session:close', async (e, sid) => {
 });
 
 ipcMain.handle('session:call', async (e, { sid, cmd, args = [] }) => {
-  const s = sessions.get(sid);
+  let s = sessions.get(sid);
   if (!s) throw new Error('session not found');
+  // Auto-reconnect: if the underlying connection dropped but we still hold
+  // its parameters, open a fresh connection transparently (keeping the same
+  // sid so the renderer's tab reference stays valid).
+  if (!s.isConn()) {
+    const cfg = s.cfg;
+    if (!cfg) throw new Error('not connected');
+    try { await s.close(); } catch (e) { }
+    sessions.delete(sid);
+    const hooks = makeHooks();
+    const engine = cfg.proto === 'sftp' ? new SftpEngine(cfg, hooks) : new FtpEngine(cfg, hooks);
+    engine.id = sid;
+    hooks.onClose = () => {
+      sessions.delete(engine.id);
+      broadcast('session:closed', { sid: engine.id });
+      queue.sessionDown(engine.id);
+    };
+    await engine.init();
+    sessions.set(sid, engine);
+    s = engine;
+    broadcast('session:reconnected', { sid });
+  }
   const map = {
     list: () => s.list(args[0]),
     stat: () => s.stat(args[0]),
