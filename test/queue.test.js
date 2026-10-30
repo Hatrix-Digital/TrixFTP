@@ -22,7 +22,7 @@ function mkQueue(opts) {
     ensureLocalDir: async () => { },
     utimesLocal: async () => { },
     listLocal: async () => [{ name: 'a.txt', isDir: false, size: 10, mtime: 0 }],
-    emit: () => { },
+    emit: (ev) => { if (ev.type === 'ask' && typeof ev.reply === 'function') ev.reply({ action: 'skip', applyAll: true }); },
     touch: () => { },
   });
   q.engine = {

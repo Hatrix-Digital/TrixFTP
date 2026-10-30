@@ -74,6 +74,11 @@ async function main() {
       return { name: d.name, isDir: d.isDirectory(), size: d.isDirectory() ? 0 : st.size, mtime: Math.floor(st.mtimeMs / 1000) };
     }),
     emit: (ev) => {
+      if (ev.type === 'ask' && typeof ev.reply === 'function') {
+        const action = (ev.curSize === ev.newSize) ? 'skip' : 'overwrite';
+        ev.reply({ action, applyAll: true });
+        return;
+      }
       if (ev.type === 'job' && ev.job.state === 'error') errors.push(ev.job.name + ': ' + ev.job.error);
     },
     touch: () => { }
