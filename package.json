@@ -11,6 +11,7 @@
     "dev": "electron . --dev",
     "test:engine": "node test/engine.test.js",
     "test:queue": "node test/queue.test.js",
+    "test:parallel": "node test/parallel.test.js",
     "test:updater": "node test/updater.test.js",
     "dist": "electron-builder"
   },

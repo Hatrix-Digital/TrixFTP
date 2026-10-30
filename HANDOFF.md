@@ -53,7 +53,10 @@ renderer/
                      F5/F2/Del keys, drag & drop
 test/
   engine.test.js     engine smoke test (spins a local ftp-srv)          -> 15/15
-  queue.test.js      regression: parallel pump, dead session, auto-reconnect -> 5/5
+  queue.test.js      regression: parallel pump, dead session, auto-reconnect,
+                     connection-loss retry, skipped-job pump          -> 9/9
+  parallel.test.js   regression: parallel uploads + UI traffic on one session,
+                     nested folder uploads, resume policy             -> 14/14
   updater.test.js    version compare + asset picking                    -> 6/6
 build/
   icon.svg           canonical logo (master)
@@ -84,6 +87,29 @@ docs/                website (GitHub Pages, /docs): pure-ASCII professional land
 5. **Default Electron icon**: generated real icons via offscreen Electron canvas render
    of `build/icon.svg`; ICO = PNG-compressed entries (16..256), ICNS = icp4/icp5/icp6/
    ic07/ic08/ic09 chunks; wired into electron-builder config and `BrowserWindow.icon`.
+6. **"Client is closed because ..." / "session disconnected" on parallel uploads**:
+   `basic-ftp` allows exactly one task per control connection. With `maxParallel > 1`
+   two queue jobs called `stat()`/`mkdirp()`/verify on the same session at the same
+   time; the second task made basic-ftp close the whole client ("User launched a task
+   while another one is still running"), so every further job in that batch failed with
+   "Client is closed because ...". Fix: every control-connection call in `lib/ftp.js`
+   (`list/stat/getwd/mkdirp/remove/rename/chmod/setTimes/execLine/createEmpty` and the
+   keep-alive NOOP) now runs through a per-session promise chain (`_run()`); transfers
+   keep using their own dedicated connection, so real parallelism is unchanged. Also:
+   queue retries a job once on a connection-loss error, `main.js` no longer lets a
+   stale engine's close handler delete a reconnected session on the same sid, and
+   `createEmptyRemote` uses the engines' serialized `createEmpty()` instead of poking
+   `client` directly. Regression `test/parallel.test.js`.
+7. **Nested folder upload accounting**: all descendants used to bump the TOP-level
+   container's `childDone`, so a root folder could show "done" while a sub-folder was
+   still uploading (and the sub-folder stayed stuck at "parent"). Jobs now carry
+   `parentId` and finalize bottom-up, aggregating size/bytes per level; empty folders
+   finalize immediately.
+8. **Parallel queue stall after a skipped job**: when a conflict policy set a job to
+   `skipped`/`done`/`canceled` (very common with `resume` + existing files), `runFile`
+   returned without calling `pump()`, so with `maxParallel > 1` the remaining jobs sat
+   in `queued` forever. All terminal paths now go through `Queue.settle()`
+   (finishChild + pump + maybeAllDone). Regression in `test/queue.test.js` (1c).
 
 ## 5. Feature checklist (as shipped)
 
@@ -106,6 +132,7 @@ docs/                website (GitHub Pages, /docs): pure-ASCII professional land
 npm install
 npm run test:engine          # engine smoke test
 npm run test:queue           # queue regression
+npm run test:parallel        # parallel uploads + nested folders regression
 npm run test:updater         # updater logic tests
 npm start                    # dev run
 npm run dist                 # local electron-builder build
@@ -137,7 +164,9 @@ authenticate via credential manager or a fresh token.
 
 ## 8. Verifications at handoff time
 
-- `test/updater.test.js` 6/6, `test/queue.test.js` 5/5, `test/engine.test.js` 15/15
+- `test/updater.test.js` 6/6, `test/queue.test.js` 9/9, `test/engine.test.js` 15/15
+- `test/parallel.test.js` 14/14 (parallel uploads, UI polling during transfers, nested
+  folder upload, resume policy) - added with the v1.1.1 parallel-upload fix
 - `lib/updater.fetchLatest()` against real GitHub -> `v1.1.0`, 6 assets
 - Live site clean: pure ASCII, no mojibake, new logo, all version references point to 1.1.0
 - Release `v1.1.0` published with all 6 platform artifacts, workflows green

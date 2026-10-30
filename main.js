@@ -22,14 +22,26 @@ const spawning = new Map();          // "host|user|proto" -> Promise<engine> (co
 async function spawnSession(cfg) {
   const hooks = makeHooks();
   const engine = cfg.proto === 'sftp' ? new SftpEngine(cfg, hooks) : new FtpEngine(cfg, hooks);
+  bindHooks(engine, hooks);
+  await engine.init();
+  sessions.set(engine.id, engine);
+  return engine;
+}
+
+// Wire a session's close handler. A stale engine (one that was transparently
+// replaced by a reconnect on the same sid) must NOT tear down the fresh
+// session that took over its id.
+function bindHooks(engine, hooks) {
+  hooks = hooks || engine.hooks || {};
   hooks.onClose = () => {
+    if (sessions.get(engine.id) !== engine) return;
     sessions.delete(engine.id);
     transientSessions.delete(engine.id);
+    clearTimeout(transientTimers.get(engine.id));
+    transientTimers.delete(engine.id);
     broadcast('session:closed', { sid: engine.id });
     queue.sessionDown(engine.id);
   };
-  await engine.init();
-  sessions.set(engine.id, engine);
   return engine;
 }
 
@@ -267,11 +279,7 @@ ipcMain.handle('session:connect', async (e, cfg) => {
   let engine;
   if (cfg.proto === 'sftp') engine = new SftpEngine(cfg, hooks);
   else engine = new FtpEngine(cfg, hooks);
-  hooks.onClose = () => {
-    sessions.delete(engine.id);
-    broadcast('session:closed', { sid: engine.id });
-    queue.sessionDown(engine.id);
-  };
+  bindHooks(engine, hooks);
   await engine.init();
   sessions.set(engine.id, engine);
   return { ok: true, sid: engine.id, type: engine.type, cwd: await engine.getwd() };
@@ -297,11 +305,7 @@ ipcMain.handle('session:call', async (e, { sid, cmd, args = [] }) => {
     const hooks = makeHooks();
     const engine = cfg.proto === 'sftp' ? new SftpEngine(cfg, hooks) : new FtpEngine(cfg, hooks);
     engine.id = sid;
-    hooks.onClose = () => {
-      sessions.delete(engine.id);
-      broadcast('session:closed', { sid: engine.id });
-      queue.sessionDown(engine.id);
-    };
+    bindHooks(engine, hooks);
     await engine.init();
     sessions.set(sid, engine);
     s = engine;
@@ -325,6 +329,7 @@ ipcMain.handle('session:call', async (e, { sid, cmd, args = [] }) => {
 });
 
 async function createEmptyRemote(s, p) {
+  if (typeof s.createEmpty === 'function') return s.createEmpty(p);
   if (s.type === 'sftp') {
     await s.cb(fn => s.sftp.writeFile(p, '', fn));
   } else {

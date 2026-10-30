@@ -54,6 +54,38 @@ function mkQueue(opts) {
     check('every job transferred exactly once', ctxv.transfers.length === 8);
   }
 
+  // 1b) a connection-loss error during the transfer is retried once, then succeeds
+  {
+    const ctxv = mkQueue({ maxParallel: 1 });
+    const s1 = ctxv.addLive('s1');
+    let calls = 0;
+    const realTransfer = ctxv.q.engine.transfer;
+    s1.transfer = (spec) => {
+      calls++;
+      if (calls === 1) {
+        return { done: Promise.reject(new Error('Client is closed because User closed client during task')), abort() { } };
+      }
+      return realTransfer(spec);
+    };
+    ctxv.q.add([{ sid: 's1', dir: 'up', src: 'retry.bin', dst: '/retry.bin', isDir: false, size: 10, mtime: 0 }]);
+    await new Promise(r => setTimeout(r, 500));
+    check('connection-loss error -> job retried and done', ctxv.q.jobs.length === 1 && ctxv.q.jobs[0].state === 'done',
+      JSON.stringify(ctxv.q.jobs.map(j => j.state + ':' + j.error)));
+    check('retry transferred twice (fail + success)', calls === 2, 'calls=' + calls);
+  }
+
+  // 1c) jobs skipped by the conflict policy must not stall the pump
+  {
+    const ctxv = mkQueue({ maxParallel: 2 });
+    const s1 = ctxv.addLive('s1');
+    s1.stat = async () => ({ exists: true, isDir: false, size: 100, mtime: 0 });
+    ctxv.q.add([1, 2, 3, 4, 5, 6].map(i => ({ sid: 's1', dir: 'up', src: 'sk' + i, dst: '/sk' + i, isDir: false, size: 100, mtime: 0 })));
+    await new Promise(r => setTimeout(r, 800));
+    check('skipped jobs do not stall the pump', ctxv.q.jobs.length === 6 && ctxv.q.jobs.every(j => j.state === 'skipped'),
+      JSON.stringify(ctxv.q.jobs.map(j => j.state)));
+    check('skipped jobs never transferred', ctxv.transfers.length === 0, 'transfers=' + ctxv.transfers.length);
+  }
+
   // 2) dead session + ensureSession unavailable -> job errors, no hang
   {
     const ctxv = mkQueue({ maxParallel: 2, reconnect: false });
